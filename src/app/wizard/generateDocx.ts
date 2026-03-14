@@ -627,7 +627,7 @@ function generateDoc(data: any): Document {
     return val === undefined || val === null;
   });
 
-  // Collect explicitly consulted fields (user pressed "Nežinau?")
+  // Collect explicitly consulted fields (user pressed "Pažymėti konsultacijai")
   const consultedFieldKeys = Object.keys(fieldConsult).filter((k) => fieldConsult[k]);
   const consultedMetricKeys = Object.keys(evalsConsult).filter((k) => evalsConsult[k]);
   const totalConsultItems = emptyFields.length + consultedMetricKeys.length;

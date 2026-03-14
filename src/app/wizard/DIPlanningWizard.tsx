@@ -330,7 +330,7 @@ function FieldHint({ fieldKey, isEmpty, isConsulted, onConsult, onCancelConsult 
     );
   }
 
-  // Field is empty — show expert badge + "Nežinau?" button
+  // Field is empty — show expert badge + consult button
   const style = EXPERTISE_LABELS[expertise.type];
   return (
     <div style={{ marginTop: 6 }}>
@@ -339,10 +339,10 @@ function FieldHint({ fieldKey, isEmpty, isConsulted, onConsult, onCancelConsult 
       </div>
       {onConsult && (
         <button onClick={() => onConsult(fieldKey)}
-          style={{ marginTop: 4, background: "#dc262612", border: "1px solid #dc262640", borderRadius: 6, color: "#fca5a5", cursor: "pointer", fontSize: 11, fontWeight: 500, padding: "3px 10px", display: "inline-flex", alignItems: "center", gap: 4, transition: "all 0.15s" }}
-          onMouseEnter={(ev) => { ev.currentTarget.style.background = "#dc262625"; ev.currentTarget.style.borderColor = "#dc262680"; }}
-          onMouseLeave={(ev) => { ev.currentTarget.style.background = "#dc262612"; ev.currentTarget.style.borderColor = "#dc262640"; }}>
-          <AlertCircle size={11} /> Nežinau
+          style={{ marginTop: 6, background: "#1e293b", border: "1px solid #059669", borderRadius: 8, color: "#e2e8f0", cursor: "pointer", fontSize: 12, fontWeight: 600, padding: "6px 14px", display: "inline-flex", alignItems: "center", gap: 5, transition: "all 0.15s", boxShadow: "0 1px 3px rgba(0,0,0,0.3)" }}
+          onMouseEnter={(ev) => { ev.currentTarget.style.background = "#059669"; ev.currentTarget.style.borderColor = "#34d399"; ev.currentTarget.style.transform = "translateY(-1px)"; ev.currentTarget.style.color = "#ffffff"; }}
+          onMouseLeave={(ev) => { ev.currentTarget.style.background = "#1e293b"; ev.currentTarget.style.borderColor = "#059669"; ev.currentTarget.style.transform = "none"; ev.currentTarget.style.color = "#e2e8f0"; }}>
+          <AlertCircle size={13} /> Pažymėti konsultacijai
         </button>
       )}
     </div>
@@ -1095,7 +1095,7 @@ function StepEvals({ data, setData }: StepProps) {
                     ) : val === undefined ? (
                       <button onClick={() => handleConsult(metric.id)}
                         style={{ marginTop: 8, background: "none", border: "1px solid #334155", borderRadius: 6, color: "#64748b", cursor: "pointer", fontSize: 11, padding: "4px 12px", display: "flex", alignItems: "center", gap: 4 }}>
-                        <Search size={11} /> Nežinau? Pažymėti konsultacijai
+                        <Search size={11} /> Pažymėti konsultacijai
                       </button>
                     ) : null}
 
@@ -2275,7 +2275,7 @@ export default function DIPlanningWizard() {
                       <span style={{ fontSize: 12, color: "#fca5a5" }}>
                         {currentStepId === "risks"
                           ? `Liko ${unhandled} neįvertintų rizikų. Paspauskite ant kiekvienos rizikos ir nustatykite statusą.`
-                          : `Liko ${unhandled} neužpildytų laukų. Užpildykite arba pažymėkite „Nežinau".`}
+                          : `Liko ${unhandled} neužpildytų laukų. Užpildykite arba pažymėkite konsultacijai.`}
                       </span>
                     </div>
                   )}
