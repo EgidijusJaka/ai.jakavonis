@@ -538,7 +538,77 @@ function generateDoc(data: any): Document {
   }));
 
   // ============================================================
-  // 6. KONSULTACIJŲ POREIKIŲ SUVESTINĖ
+  // 6. RIZIKŲ REGISTRAS
+  // ============================================================
+  interface RiskAssessmentEntry {
+    id: string;
+    article: string;
+    area: string;
+    risk: string;
+    responsible: string;
+    measures: string;
+    impact: string;
+    likelihood: string;
+    status: string;
+    notes?: string;
+  }
+
+  const IMPACT_LT: Record<string, string> = { critical: "Kritinis", high: "Aukštas", medium: "Vidutinis", low: "Žemas" };
+  const LIKELIHOOD_LT: Record<string, string> = { high: "Aukšta", medium: "Vidutinė", low: "Žema" };
+  const STATUS_LT: Record<string, string> = { open: "Atvira", managed: "Valdoma", accepted: "Priimta", not_applicable: "Netaikoma" };
+
+  const risksData = (data.risks as { assessments?: RiskAssessmentEntry[] })?.assessments || [];
+  if (risksData.length > 0) {
+    content.push(new Paragraph({ children: [new PageBreak()] }));
+    content.push(heading("6. Rizikų registras (ES DI Aktas)"));
+    content.push(para("Identifikuotos rizikos pagal ES DI Akto reikalavimus su vertinimu ir valdymo priemonėmis."));
+
+    const riskTableRows = risksData.map((r: RiskAssessmentEntry, i: number) => new TableRow({
+      children: [
+        dataCell(r.id, 700, { shade: i % 2 }),
+        dataCell(r.article, 900, { shade: i % 2 }),
+        dataCell(r.risk, 3226, { shade: i % 2 }),
+        dataCell(IMPACT_LT[r.impact] || r.impact, 900, { shade: i % 2 }),
+        dataCell(LIKELIHOOD_LT[r.likelihood] || r.likelihood, 900, { shade: i % 2 }),
+        dataCell(STATUS_LT[r.status] || r.status, 900, { shade: i % 2 }),
+        dataCell(r.responsible, 1500, { shade: i % 2 }),
+      ],
+    }));
+
+    content.push(new Table({
+      width: { size: 9026, type: WidthType.DXA },
+      rows: [
+        new TableRow({
+          children: [
+            headerCell("ID", 700), headerCell("Str.", 900), headerCell("Rizika", 3226),
+            headerCell("Poveikis", 900), headerCell("Tikimybė", 900), headerCell("Statusas", 900), headerCell("Atsakingas", 1500),
+          ],
+        }),
+        ...riskTableRows,
+      ],
+    }));
+
+    // Add detailed entries for open/managed risks with notes
+    const detailedRisks = risksData.filter((r: RiskAssessmentEntry) => r.status === "open" || r.status === "managed");
+    if (detailedRisks.length > 0) {
+      content.push(para(""));
+      content.push(para("Detalūs rizikų aprašymai:", { bold: true, spacing: { before: 200 } }));
+      detailedRisks.forEach((r: RiskAssessmentEntry) => {
+        content.push(para(`${r.id} — ${r.risk}`, { bold: true, spacing: { before: 150 } }));
+        content.push(para(`Valdymo priemonės: ${r.measures}`));
+        if (r.notes) {
+          content.push(para(`Pastabos: ${r.notes}`, { color: "666666" }));
+        }
+      });
+    }
+
+    const openCount = risksData.filter((r: RiskAssessmentEntry) => r.status === "open").length;
+    const managedCount = risksData.filter((r: RiskAssessmentEntry) => r.status === "managed" || r.status === "accepted").length;
+    content.push(para(`Suvestinė: ${openCount} atviros, ${managedCount} valdomos/priimtos, ${risksData.length} iš viso.`, { bold: true, color: openCount > 0 ? ORANGE : BLUE, spacing: { before: 200 } }));
+  }
+
+  // ============================================================
+  // 7. KONSULTACIJŲ POREIKIŲ SUVESTINĖ
   // ============================================================
   const fieldConsult: Record<string, boolean> = (data.fieldConsult as Record<string, boolean>) || {};
   const evalsConsult: Record<string, boolean> = (data.evalsConsult as Record<string, boolean>) || {};
@@ -560,7 +630,7 @@ function generateDoc(data: any): Document {
 
   if (totalConsultItems > 0) {
     content.push(new Paragraph({ children: [new PageBreak()] }));
-    content.push(heading("6. Konsultacijų poreikių suvestinė"));
+    content.push(heading("7. Konsultacijų poreikių suvestinė"));
     content.push(para("Šiame skyriuje pateikiami laukai, pažymėti konsultacijai arba neužpildyti, sugrupuoti pagal reikalingą ekspertizę. Naudokite šią lentelę kaip veiksmų planą — kreipkitės į atitinkamus specialistus."));
 
     // Group by expert type

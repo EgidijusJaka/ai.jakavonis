@@ -118,6 +118,29 @@ interface ArchitectureData {
   [key: string]: unknown;
 }
 
+type RiskStatus = "open" | "managed" | "accepted" | "not_applicable";
+type RiskImpact = "critical" | "high" | "medium" | "low";
+type RiskLikelihood = "high" | "medium" | "low";
+
+interface RiskEntry {
+  id: string;
+  article: string;
+  area: string;
+  responsible: string;
+  risk: string;
+  reason: string;
+  impact: RiskImpact;
+  likelihood: RiskLikelihood;
+  measures: string;
+  status: RiskStatus;
+  userNotes?: string;
+}
+
+interface RisksData {
+  assessments?: Record<string, { status: RiskStatus; impact: RiskImpact; likelihood: RiskLikelihood; notes?: string }>;
+  [key: string]: unknown;
+}
+
 interface MetaData {
   projectName?: string;
   organization?: string;
@@ -130,6 +153,7 @@ interface WizardData {
   concept: ConceptData;
   evals: EvalsData;
   architecture: ArchitectureData;
+  risks: RisksData;
   _meta: MetaData;
   fieldConsult?: Record<string, boolean>;
   [key: string]: unknown;
@@ -1274,7 +1298,276 @@ function StepArchitecture({ data, setData }: StepProps) {
 }
 
 // ============================================================
-// STEP 5: ATASKAITA / TECHNINE SPECIFIKACIJA
+// STEP 5: RIZIKŲ REGISTRAS (ES DI AKTAS)
+// ============================================================
+
+const RISK_STATUS_LABELS: Record<RiskStatus, { label: string; color: string }> = {
+  open: { label: "Atvira", color: "#f97316" },
+  managed: { label: "Valdoma", color: "#3b82f6" },
+  accepted: { label: "Priimta", color: "#22c55e" },
+  not_applicable: { label: "Netaikoma", color: "#64748b" },
+};
+
+const RISK_IMPACT_LABELS: Record<RiskImpact, { label: string; color: string }> = {
+  critical: { label: "Kritinis", color: "#ef4444" },
+  high: { label: "Aukštas", color: "#f97316" },
+  medium: { label: "Vidutinis", color: "#f59e0b" },
+  low: { label: "Žemas", color: "#22c55e" },
+};
+
+const RISK_LIKELIHOOD_LABELS: Record<RiskLikelihood, { label: string; color: string }> = {
+  high: { label: "Aukšta", color: "#ef4444" },
+  medium: { label: "Vidutinė", color: "#f97316" },
+  low: { label: "Žema", color: "#22c55e" },
+};
+
+const ARTICLE_COLORS: Record<string, string> = {
+  "Art. 9": "#f97316",
+  "Art. 10": "#3b82f6",
+  "Art. 11": "#8b5cf6",
+  "Art. 12": "#06b6d4",
+  "Art. 13": "#10b981",
+  "Art. 14": "#ef4444",
+  "Art. 15": "#f59e0b",
+  "Art. 50": "#ec4899",
+  "BDAR": "#6366f1",
+};
+
+const DEFAULT_RISKS: RiskEntry[] = [
+  { id: "R-01", article: "Art. 9", area: "Rizikos valdymas", responsible: "Tiekėjas / Diegėjas", risk: "Nėra nustatytos rizikų valdymo sistemos", reason: "Art. 9 reikalauja iteratyvaus rizikų identifikavimo, vertinimo ir mažinimo proceso per visą gyvavimo ciklą", impact: "high", likelihood: "medium", measures: "Sukurti rizikų valdymo planą, paskirti atsakingą asmenį, reguliarūs auditai", status: "open" },
+  { id: "R-02", article: "Art. 9", area: "Rizikos valdymas", responsible: "Tiekėjas", risk: "Numatomo netinkamo naudojimo (foreseeable misuse) neįvertinimas", reason: "Sistemos gali būti naudojamos ne pagal paskirtį; tiekėjas privalo tai numatyti ir sumažinti riziką", impact: "high", likelihood: "medium", measures: "Naudojimo scenarijų analizė, apribojimų dokumentavimas, naudotojų mokymai", status: "open" },
+  { id: "R-03", article: "Art. 10", area: "Duomenų valdymas", responsible: "Tiekėjas", risk: "Mokymo duomenys su šališkumu (bias) ar nekokybiškomis imtimis", reason: "Šališki duomenys lemia diskriminacinius sprendimus; Art. 10 reikalauja duomenų kokybės užtikrinimo", impact: "critical", likelihood: "high", measures: "Duomenų auditas, bias testai, reprezentatyvių imčių užtikrinimas", status: "open" },
+  { id: "R-04", article: "Art. 10", area: "Duomenų valdymas", responsible: "Tiekėjas / Diegėjas", risk: "Nepakankamai dokumentuoti duomenų šaltiniai ir transformacijos", reason: "Negalima įrodyti duomenų kilmės ir kokybės; pažeidžia skaidrumo reikalavimus", impact: "medium", likelihood: "high", measures: "Data lineage dokumentacija, versijų kontrolė, duomenų katalogai", status: "open" },
+  { id: "R-05", article: "Art. 11", area: "Techninė dokumentacija", responsible: "Tiekėjas", risk: "Nepilna arba neaktuali techninė dokumentacija", reason: "Rinkos priežiūros institucijos turi turėti prieigą prie pilnos sistemos dokumentacijos", impact: "high", likelihood: "medium", measures: "Dokumentacijos šablonas pagal Annex IV, reguliarus atnaujinimas, versijų kontrolė", status: "open" },
+  { id: "R-06", article: "Art. 12", area: "Įvykių registravimas", responsible: "Tiekėjas / Diegėjas", risk: "Automatinis įvykių žurnalas (log) neveikia arba jo nėra", reason: "Art. 12 reikalauja automatinio logavimo visam sistemos veikimo laikotarpiui atsekamumo tikslais", impact: "high", likelihood: "medium", measures: "Automatinis logavimas, log saugojimas min. 6 mėn., prieigos kontrolė", status: "open" },
+  { id: "R-07", article: "Art. 12", area: "Įvykių registravimas", responsible: "Diegėjas", risk: "Logai neapima visų sprendimų sekų", reason: "Incidento atveju negali būti atkurta sprendimo grandinė; pažeidžia atskaitomybės principą", impact: "high", likelihood: "medium", measures: "Input/output logavimas, timestamp, naudotojo ID, konteksto duomenys", status: "open" },
+  { id: "R-08", article: "Art. 13", area: "Skaidrumas", responsible: "Diegėjas", risk: "Naudotojai neinformuojami, kad sąveikauja su DI sistema", reason: "Art. 13 reikalauja aiškiai informuoti naudotojus apie sistemos galimybes ir ribas", impact: "medium", likelihood: "high", measures: "UI žymos 'DI sistema', naudotojo instrukcija, onboarding mokymai", status: "open" },
+  { id: "R-09", article: "Art. 13", area: "Skaidrumas", responsible: "Tiekėjas / Diegėjas", risk: "Naudojimo instrukcija nepasiekiama arba nesuprantama galutiniam naudotojui", reason: "Naudotojai turi suprasti sistemos apribojimus, kad galėtų priimti informuotus sprendimus", impact: "medium", likelihood: "medium", measures: "Paprastų žodžių instrukcija, FAQ, mokymo medžiaga lietuvių kalba", status: "open" },
+  { id: "R-10", article: "Art. 14", area: "Žmogiškoji priežiūra", responsible: "Diegėjas", risk: "Sistema veikia be realios žmogaus priežiūros (rubber stamp)", reason: "Art. 14 reikalauja, kad žmonės galėtų suprasti, stebėti ir nutraukti sistemos veiklą", impact: "critical", likelihood: "high", measures: "Aiški eskalacijos procedūra, 'stop' mechanizmas, atsakingo asmens paskyrimas", status: "open" },
+  { id: "R-11", article: "Art. 14", area: "Žmogiškoji priežiūra", responsible: "Diegėjas", risk: "Automation bias — darbuotojai aklai pasitiki sistemos sprendimais", reason: "Žmogiškoji priežiūra turi būti reali, ne formali; automatizacijos šališkumas kelia sisteminę riziką", impact: "high", likelihood: "high", measures: "Mokymai apie automation bias, kritinio vertinimo kultūra, periodinis override auditas", status: "open" },
+  { id: "R-12", article: "Art. 15", area: "Tikslumas ir patvarumas", responsible: "Tiekėjas", risk: "Modelio tikslumas blogėja laikui bėgant (model drift)", reason: "Art. 15 reikalauja palaikyti deklaruotą tikslumo lygį per visą eksploatacijos laikotarpį", impact: "high", likelihood: "high", measures: "Reguliarus veikimo stebėjimas, drift detekavimas, automatiniai įspėjimai", status: "open" },
+  { id: "R-13", article: "Art. 15", area: "Tikslumas ir patvarumas", responsible: "Tiekėjas / Diegėjas", risk: "Sistema neatspari kibernetinėms atakoms (adversarial inputs)", reason: "Kenkėjiški įvesties duomenys gali manipuliuoti sistemos sprendimais", impact: "critical", likelihood: "medium", measures: "Saugumo testavimas, input validacija, anomalijų aptikimas", status: "open" },
+  { id: "R-14", article: "Art. 50", area: "Skaidrumo pareigos", responsible: "Diegėjas", risk: "Deepfake ar sintetinis turinys nepažymėtas", reason: "Art. 50 reikalauja žymėti DI generuotą turinį, ypač veidus, balsus, tekstą", impact: "high", likelihood: "low", measures: "Automatinis turinio žymėjimas, metaduomenų įterpimas, watermarking", status: "not_applicable" },
+  { id: "R-15", article: "BDAR", area: "Duomenų apsauga", responsible: "Duomenų valdytojas", risk: "DPIA (PPPV) neatliktas prieš diegiant sistemą", reason: "BDAR 35 str. reikalauja DPIA kai DI apdoroja asmens duomenis dideliu mastu arba priima automatizuotus sprendimus", impact: "critical", likelihood: "high", measures: "DPIA atlikimas, DPO konsultavimas, VDAI notifikavimas jei reikia", status: "open" },
+  { id: "R-16", article: "BDAR", area: "Duomenų apsauga", responsible: "Duomenų valdytojas", risk: "Nepakankamas duomenų saugojimo laikotarpio apibrėžimas", reason: "Asmens duomenys negali būti saugomi ilgiau nei būtina; pažeidimas = BDAR sankcijos", impact: "medium", likelihood: "medium", measures: "Duomenų gyvavimo ciklo politika, automatinio ištrynimo procedūros", status: "open" },
+];
+
+function StepRisks({ data, setData }: StepProps) {
+  const assessments = data.risks?.assessments || {};
+  const [selectedRisk, setSelectedRisk] = useState<string | null>(null);
+  const [filterArticle, setFilterArticle] = useState("Visi");
+  const [searchText, setSearchText] = useState("");
+
+  const updateAssessment = (riskId: string, field: string, val: unknown) => {
+    setData((d) => ({
+      ...d,
+      risks: {
+        ...d.risks,
+        assessments: {
+          ...(d.risks?.assessments || {}),
+          [riskId]: { ...(d.risks?.assessments || {})[riskId], [field]: val },
+        },
+      },
+    }));
+  };
+
+  const getRisk = (r: RiskEntry) => {
+    const a = assessments[r.id];
+    return {
+      status: a?.status || r.status,
+      impact: a?.impact || r.impact,
+      likelihood: a?.likelihood || r.likelihood,
+      notes: a?.notes || "",
+    };
+  };
+
+  const articles = ["Visi", ...Array.from(new Set(DEFAULT_RISKS.map((r) => r.article)))];
+  const filtered = DEFAULT_RISKS.filter((r) =>
+    (filterArticle === "Visi" || r.article === filterArticle) &&
+    (searchText === "" || r.risk.toLowerCase().includes(searchText.toLowerCase()) || r.area.toLowerCase().includes(searchText.toLowerCase()) || r.responsible.toLowerCase().includes(searchText.toLowerCase()))
+  );
+
+  const allRisks = DEFAULT_RISKS.map((r) => getRisk(r));
+  const stats = {
+    critical: allRisks.filter((r) => r.impact === "critical" && r.status !== "not_applicable").length,
+    high: allRisks.filter((r) => r.impact === "high" && r.status !== "not_applicable").length,
+    managed: allRisks.filter((r) => r.status === "managed" || r.status === "accepted").length,
+    open: allRisks.filter((r) => r.status === "open").length,
+  };
+
+  const selected = selectedRisk ? DEFAULT_RISKS.find((r) => r.id === selectedRisk) : null;
+  const selData = selected ? getRisk(selected) : null;
+
+  return (
+    <div>
+      <Card>
+        <SectionTitle icon={<ShieldAlert size={18} />} title="ES DI Akto rizikų registras" subtitle="Įvertinkite kiekvieną riziką pagal jūsų sistemos kontekstą. Keiskite statusą, poveikį ir tikimybę." />
+
+        {/* Stats */}
+        <div style={{ display: "grid", gridTemplateColumns: "repeat(4, 1fr)", gap: 10, marginBottom: 16 }}>
+          {[
+            { label: "Kritinės", count: stats.critical, color: "#ef4444" },
+            { label: "Aukšto poveikio", count: stats.high, color: "#f97316" },
+            { label: "Valdomos", count: stats.managed, color: "#22c55e" },
+            { label: "Atviros", count: stats.open, color: "#f59e0b" },
+          ].map((s, i) => (
+            <div key={i} style={{ background: "#0f172a", borderRadius: 8, padding: "12px 16px", border: "1px solid #334155" }}>
+              <div style={{ fontSize: 22, fontWeight: 700, color: s.color }}>{s.count}</div>
+              <div style={{ fontSize: 11, color: "#64748b", marginTop: 2 }}>{s.label}</div>
+            </div>
+          ))}
+        </div>
+
+        {/* Filters */}
+        <div style={{ display: "flex", gap: 8, flexWrap: "wrap", alignItems: "center", marginBottom: 16 }}>
+          <input
+            value={searchText}
+            onChange={(e) => setSearchText(e.target.value)}
+            placeholder="Ieškoti rizikų..."
+            style={{ background: "#0f172a", border: "1px solid #334155", borderRadius: 6, padding: "6px 12px", color: "#e2e8f0", fontSize: 12, fontFamily: "inherit", width: 200 }}
+          />
+          {articles.map((a) => (
+            <button key={a} onClick={() => setFilterArticle(a)} style={{
+              padding: "4px 10px", borderRadius: 4, fontSize: 11, fontWeight: 600, cursor: "pointer", transition: "all 0.15s",
+              border: `1px solid ${filterArticle === a ? "#3b82f6" : "#334155"}`,
+              background: filterArticle === a ? "#1e40af30" : "transparent",
+              color: filterArticle === a ? "#93c5fd" : "#64748b",
+            }}>{a}</button>
+          ))}
+        </div>
+
+        {/* Risk table */}
+        <div style={{ overflowX: "auto" }}>
+          <table style={{ width: "100%", borderCollapse: "collapse", fontSize: 12 }}>
+            <thead>
+              <tr style={{ borderBottom: "2px solid #334155" }}>
+                {["ID", "Straipsnis", "Sritis", "Atsakingas", "Rizika", "Poveikis", "Tikimybė", "Statusas", ""].map((h, i) => (
+                  <th key={i} style={{ padding: "8px 10px", textAlign: "left", color: "#64748b", fontWeight: 600, fontSize: 10, textTransform: "uppercase", letterSpacing: 1, whiteSpace: "nowrap" }}>{h}</th>
+                ))}
+              </tr>
+            </thead>
+            <tbody>
+              {filtered.map((r, i) => {
+                const rd = getRisk(r);
+                const impactStyle = RISK_IMPACT_LABELS[rd.impact];
+                const likelihoodStyle = RISK_LIKELIHOOD_LABELS[rd.likelihood];
+                const statusStyle = RISK_STATUS_LABELS[rd.status];
+                const artColor = ARTICLE_COLORS[r.article] || "#64748b";
+                return (
+                  <tr key={r.id} onClick={() => setSelectedRisk(r.id)}
+                    style={{ borderBottom: "1px solid #1e293b", background: i % 2 === 0 ? "transparent" : "#0f172a08", cursor: "pointer", transition: "background 0.15s" }}
+                    onMouseEnter={(e) => { e.currentTarget.style.background = "#334155"; }}
+                    onMouseLeave={(e) => { e.currentTarget.style.background = i % 2 === 0 ? "transparent" : "#0f172a08"; }}
+                  >
+                    <td style={{ padding: "10px", color: "#93c5fd", fontWeight: 600 }}>{r.id}</td>
+                    <td style={{ padding: "10px" }}>
+                      <span style={{ display: "inline-block", padding: "2px 8px", borderRadius: 4, fontSize: 11, fontWeight: 600, background: artColor + "18", color: artColor, border: `1px solid ${artColor}40` }}>{r.article}</span>
+                    </td>
+                    <td style={{ padding: "10px", color: "#94a3b8", fontSize: 11 }}>{r.area}</td>
+                    <td style={{ padding: "10px", color: "#7dd3fc", fontSize: 11 }}>{r.responsible}</td>
+                    <td style={{ padding: "10px", color: "#e2e8f0", maxWidth: 260, fontSize: 12 }}>{r.risk}</td>
+                    <td style={{ padding: "10px" }}>
+                      <span style={{ display: "inline-block", padding: "2px 8px", borderRadius: 4, fontSize: 11, fontWeight: 600, background: impactStyle.color + "18", color: impactStyle.color }}>{impactStyle.label}</span>
+                    </td>
+                    <td style={{ padding: "10px" }}>
+                      <span style={{ display: "inline-block", padding: "2px 8px", borderRadius: 4, fontSize: 11, fontWeight: 600, background: likelihoodStyle.color + "18", color: likelihoodStyle.color }}>{likelihoodStyle.label}</span>
+                    </td>
+                    <td style={{ padding: "10px" }}>
+                      <span style={{ display: "inline-block", padding: "2px 8px", borderRadius: 4, fontSize: 11, fontWeight: 600, background: statusStyle.color + "18", color: statusStyle.color }}>{statusStyle.label}</span>
+                    </td>
+                    <td style={{ padding: "10px", color: "#475569", fontSize: 16 }}>›</td>
+                  </tr>
+                );
+              })}
+            </tbody>
+          </table>
+        </div>
+      </Card>
+
+      {/* Detail modal */}
+      {selected && selData && (
+        <div onClick={() => setSelectedRisk(null)} style={{ position: "fixed", inset: 0, background: "rgba(0,0,0,0.7)", display: "flex", alignItems: "center", justifyContent: "center", zIndex: 100, padding: 20 }}>
+          <div onClick={(e) => e.stopPropagation()} style={{ background: "#1e293b", border: "1px solid #334155", borderRadius: 12, maxWidth: 640, width: "100%", maxHeight: "85vh", overflowY: "auto" }}>
+            {/* Modal header */}
+            <div style={{ padding: "20px 24px", borderBottom: "1px solid #334155", display: "flex", justifyContent: "space-between", alignItems: "flex-start" }}>
+              <div>
+                <div style={{ display: "flex", gap: 8, marginBottom: 8, flexWrap: "wrap" }}>
+                  <span style={{ color: "#93c5fd", fontWeight: 700 }}>{selected.id}</span>
+                  <span style={{ display: "inline-block", padding: "2px 8px", borderRadius: 4, fontSize: 11, fontWeight: 600, background: (ARTICLE_COLORS[selected.article] || "#666") + "18", color: ARTICLE_COLORS[selected.article] || "#999" }}>{selected.article}</span>
+                  <span style={{ display: "inline-block", padding: "2px 8px", borderRadius: 4, fontSize: 11, fontWeight: 600, background: "#334155", color: "#7dd3fc" }}>{selected.area}</span>
+                </div>
+                <h2 style={{ fontSize: 15, color: "#e2e8f0", fontWeight: 600, lineHeight: 1.4, margin: 0 }}>{selected.risk}</h2>
+              </div>
+              <button onClick={() => setSelectedRisk(null)} style={{ background: "none", border: "none", color: "#64748b", cursor: "pointer", fontSize: 20, padding: "0 0 0 16px" }}>✕</button>
+            </div>
+
+            {/* Modal body */}
+            <div style={{ padding: "20px 24px", display: "flex", flexDirection: "column", gap: 18 }}>
+              <div>
+                <div style={{ fontSize: 10, color: "#64748b", letterSpacing: 2, textTransform: "uppercase", marginBottom: 4 }}>Kas atsakingas</div>
+                <div style={{ color: "#7dd3fc", fontSize: 13 }}>{selected.responsible}</div>
+              </div>
+              <div>
+                <div style={{ fontSize: 10, color: "#64748b", letterSpacing: 2, textTransform: "uppercase", marginBottom: 4 }}>Kodėl tai rizika</div>
+                <div style={{ color: "#94a3b8", fontSize: 13, lineHeight: 1.6 }}>{selected.reason}</div>
+              </div>
+              <div>
+                <div style={{ fontSize: 10, color: "#64748b", letterSpacing: 2, textTransform: "uppercase", marginBottom: 4 }}>Rekomenduojamos valdymo priemonės</div>
+                <div style={{ color: "#34d399", fontSize: 13, lineHeight: 1.6 }}>{selected.measures}</div>
+              </div>
+
+              {/* Editable fields */}
+              <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr", gap: 12, paddingTop: 12, borderTop: "1px solid #334155" }}>
+                <div>
+                  <label style={{ fontSize: 10, color: "#64748b", letterSpacing: 2, textTransform: "uppercase", display: "block", marginBottom: 6 }}>Poveikis</label>
+                  <select value={selData.impact} onChange={(e) => updateAssessment(selected.id, "impact", e.target.value)}
+                    style={{ width: "100%", background: "#0f172a", border: "1px solid #334155", borderRadius: 6, color: RISK_IMPACT_LABELS[selData.impact].color, padding: "8px 10px", fontSize: 13, fontWeight: 600, cursor: "pointer" }}>
+                    {(Object.entries(RISK_IMPACT_LABELS) as [RiskImpact, { label: string; color: string }][]).map(([k, v]) => (
+                      <option key={k} value={k}>{v.label}</option>
+                    ))}
+                  </select>
+                </div>
+                <div>
+                  <label style={{ fontSize: 10, color: "#64748b", letterSpacing: 2, textTransform: "uppercase", display: "block", marginBottom: 6 }}>Tikimybė</label>
+                  <select value={selData.likelihood} onChange={(e) => updateAssessment(selected.id, "likelihood", e.target.value)}
+                    style={{ width: "100%", background: "#0f172a", border: "1px solid #334155", borderRadius: 6, color: RISK_LIKELIHOOD_LABELS[selData.likelihood].color, padding: "8px 10px", fontSize: 13, fontWeight: 600, cursor: "pointer" }}>
+                    {(Object.entries(RISK_LIKELIHOOD_LABELS) as [RiskLikelihood, { label: string; color: string }][]).map(([k, v]) => (
+                      <option key={k} value={k}>{v.label}</option>
+                    ))}
+                  </select>
+                </div>
+                <div>
+                  <label style={{ fontSize: 10, color: "#64748b", letterSpacing: 2, textTransform: "uppercase", display: "block", marginBottom: 6 }}>Statusas</label>
+                  <select value={selData.status} onChange={(e) => updateAssessment(selected.id, "status", e.target.value)}
+                    style={{ width: "100%", background: "#0f172a", border: "1px solid #334155", borderRadius: 6, color: RISK_STATUS_LABELS[selData.status].color, padding: "8px 10px", fontSize: 13, fontWeight: 600, cursor: "pointer" }}>
+                    {(Object.entries(RISK_STATUS_LABELS) as [RiskStatus, { label: string; color: string }][]).map(([k, v]) => (
+                      <option key={k} value={k}>{v.label}</option>
+                    ))}
+                  </select>
+                </div>
+              </div>
+
+              {/* User notes */}
+              <div>
+                <label style={{ fontSize: 10, color: "#64748b", letterSpacing: 2, textTransform: "uppercase", display: "block", marginBottom: 6 }}>Jūsų pastabos</label>
+                <textarea
+                  value={selData.notes}
+                  onChange={(e) => updateAssessment(selected.id, "notes", e.target.value)}
+                  placeholder="Aprašykite, kaip ši rizika taikoma jūsų situacijai, kokias priemones planuojate..."
+                  rows={3}
+                  style={{ width: "100%", background: "#0f172a", border: "1px solid #334155", borderRadius: 8, color: "#e2e8f0", padding: "10px 14px", fontSize: 13, fontFamily: "inherit", resize: "vertical", boxSizing: "border-box" }}
+                />
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}
+
+// ============================================================
+// STEP 6: ATASKAITA / TECHNINE SPECIFIKACIJA
 // ============================================================
 
 const RISK_MAP: Record<number, string> = { 0: "Minimali rizika", 1: "Ribota rizika (Art. 50)", 2: "Auksta rizika (Art. 6-49)", 3: "Nepriimtina (Art. 5)" };
@@ -1424,6 +1717,12 @@ function StepReport({ data }: ReportStepProps) {
         ),
       },
       architecture: { ...data.architecture },
+      risks: {
+        assessments: DEFAULT_RISKS.map((r) => {
+          const a = (data.risks?.assessments || {})[r.id];
+          return { id: r.id, article: r.article, area: r.area, risk: r.risk, responsible: r.responsible, measures: r.measures, impact: a?.impact || r.impact, likelihood: a?.likelihood || r.likelihood, status: a?.status || r.status, notes: a?.notes || "" };
+        }),
+      },
       fieldConsult: data.fieldConsult || {},
       evalsConsult: data.evals?.needsConsult || {},
     };
@@ -1491,6 +1790,12 @@ function StepReport({ data }: ReportStepProps) {
         ),
       },
       architecture: { ...data.architecture },
+      risks: {
+        assessments: DEFAULT_RISKS.map((r) => {
+          const a = (data.risks?.assessments || {})[r.id];
+          return { id: r.id, article: r.article, area: r.area, risk: r.risk, responsible: r.responsible, measures: r.measures, impact: a?.impact || r.impact, likelihood: a?.likelihood || r.likelihood, status: a?.status || r.status, notes: a?.notes || "" };
+        }),
+      },
       fieldConsult: data.fieldConsult || {},
       evalsConsult: data.evals?.needsConsult || {},
     };
@@ -1547,6 +1852,16 @@ function StepReport({ data }: ReportStepProps) {
             <div style={{ fontSize: 36, fontWeight: 800, color: "#06b6d4" }}>{(a.selectedComponents || []).length}</div>
             <div style={{ fontSize: 11, color: "#64748b" }}>Arch. komponentai</div>
           </div>
+          {(() => {
+            const ra = data.risks?.assessments || {};
+            const openRisks = DEFAULT_RISKS.filter((r) => (ra[r.id]?.status || r.status) === "open").length;
+            return (
+              <div style={{ background: "#0f172a", borderRadius: 10, padding: "16px 24px", textAlign: "center", minWidth: 120 }}>
+                <div style={{ fontSize: 36, fontWeight: 800, color: openRisks > 0 ? "#f97316" : "#059669" }}>{openRisks}</div>
+                <div style={{ fontSize: 11, color: "#64748b" }}>Atviros rizikos</div>
+              </div>
+            );
+          })()}
         </div>
       </Card>
 
@@ -1654,13 +1969,51 @@ function StepReport({ data }: ReportStepProps) {
         </ReportSection>
       </Card>
 
+      {/* 6. RIZIKŲ REGISTRAS */}
+      <Card>
+        <ReportSection num="6" title="Rizikų registras (ES DI Aktas)">
+          {(() => {
+            const ra = data.risks?.assessments || {};
+            const riskRows = DEFAULT_RISKS.map((r) => {
+              const a = ra[r.id];
+              const status = a?.status || r.status;
+              const impact = a?.impact || r.impact;
+              const likelihood = a?.likelihood || r.likelihood;
+              return [
+                r.id,
+                r.article,
+                r.risk,
+                RISK_IMPACT_LABELS[impact].label,
+                RISK_LIKELIHOOD_LABELS[likelihood].label,
+                <span key={r.id} style={{ color: RISK_STATUS_LABELS[status].color, fontWeight: 600 }}>{RISK_STATUS_LABELS[status].label}</span>,
+              ];
+            });
+            const openCount = DEFAULT_RISKS.filter((r) => (ra[r.id]?.status || r.status) === "open").length;
+            const managedCount = DEFAULT_RISKS.filter((r) => {
+              const s = ra[r.id]?.status || r.status;
+              return s === "managed" || s === "accepted";
+            }).length;
+            return (
+              <>
+                <div style={{ display: "flex", gap: 16, marginBottom: 12 }}>
+                  <span style={{ fontSize: 13, color: "#f97316" }}>Atviros: <strong>{openCount}</strong></span>
+                  <span style={{ fontSize: 13, color: "#22c55e" }}>Valdomos/Priimtos: <strong>{managedCount}</strong></span>
+                  <span style={{ fontSize: 13, color: "#64748b" }}>Iš viso: <strong>{DEFAULT_RISKS.length}</strong></span>
+                </div>
+                <RTable headers={["ID", "Str.", "Rizika", "Poveikis", "Tikimybė", "Statusas"]} rows={riskRows} />
+              </>
+            );
+          })()}
+        </ReportSection>
+      </Card>
+
       {/* TS naudojimo instrukcija */}
       <Card style={{ background: "#065f4615", border: "1px solid #065f46" }}>
         <SectionTitle icon={<ClipboardList size={18} />} title="Kaip naudoti kaip pirkimo TS?" subtitle="" />
         <div style={{ fontSize: 13, color: "#94a3b8", lineHeight: 1.7 }}>
           <p style={{ margin: "0 0 8px" }}><strong style={{ color: "#6ee7b7" }}>1.</strong> Atsisiųskite JSON arba sugeneruokite DOCX su mygtukais aukščiau</p>
           <p style={{ margin: "0 0 8px" }}><strong style={{ color: "#6ee7b7" }}>2.</strong> DOCX failas generuojamas tiesiogiai naršyklėje — jokių papildomų įrankių nereikia</p>
-          <p style={{ margin: "0 0 8px" }}><strong style={{ color: "#6ee7b7" }}>3.</strong> Gausite profesionalų Word dokumentą su 5 skyriais: Problema &rarr; Konceptas &rarr; Metrikos &rarr; Architektūra &rarr; DI Akto atitiktis</p>
+          <p style={{ margin: "0 0 8px" }}><strong style={{ color: "#6ee7b7" }}>3.</strong> Gausite profesionalų Word dokumentą su 6 skyriais: Problema &rarr; Konceptas &rarr; Metrikos &rarr; Architektūra &rarr; DI Akto atitiktis &rarr; Rizikų registras</p>
           <p style={{ margin: "0 0 8px" }}><strong style={{ color: "#6ee7b7" }}>4.</strong> Evals balai (0-3) automatiškai konvertuojami į konkrečius tikslinius rodiklius ir minimalius slenksčius</p>
           <p style={{ margin: 0, color: "#64748b", fontStyle: "italic" }}>Dokumentas atitinka ES DI Akto Art. 11 / Annex IV techninės dokumentacijos struktūrą ir gali būti naudojamas kaip pagrindas viešajam pirkimui.</p>
         </div>
@@ -1678,12 +2031,13 @@ const STEPS: StepDefinition[] = [
   { id: "concept", title: "Sistemos konceptas", icon: MessageSquare, desc: "Architektūra ir žmogiškoji priežiūra", component: StepConcept },
   { id: "evals", title: "Evals / Metrikos", icon: BarChart3, desc: "Vertinimo kriterijai ir slenkščiai", component: StepEvals },
   { id: "architecture", title: "Sistemos prototipas", icon: Wrench, desc: "Komponentai ir infrastruktūra", component: StepArchitecture },
+  { id: "risks", title: "Rizikų registras", icon: ShieldAlert, desc: "ES DI Akto rizikų vertinimas", component: StepRisks },
   { id: "report", title: "Ataskaita / TS", icon: ClipboardList, desc: "Techninė specifikacija ir eksportas", component: StepReport },
 ];
 
 export default function DIPlanningWizard() {
   const [activeStep, setActiveStep] = useState<number>(0);
-  const [data, setData] = useState<WizardData>({ problem: {}, concept: {}, evals: {}, architecture: {}, _meta: {}, fieldConsult: {} });
+  const [data, setData] = useState<WizardData>({ problem: {}, concept: {}, evals: {}, architecture: {}, risks: {}, _meta: {}, fieldConsult: {} });
 
   // Get all required field keys for a step from FIELD_EXPERTISE
   const getStepFieldKeys = useCallback((stepId: string): string[] => {
@@ -1704,19 +2058,23 @@ export default function DIPlanningWizard() {
 
   // Is every field in a step handled?
   const isStepComplete = useCallback((stepId: string): boolean => {
-    if (stepId === "report") return ["problem", "concept", "evals", "architecture"].every((s) => isStepComplete(s));
+    if (stepId === "report") return ["problem", "concept", "evals", "architecture", "risks"].every((s) => isStepComplete(s));
     if (stepId === "evals") {
       const allMetrics = EVAL_CATEGORIES.flatMap((c) => c.metrics);
       const scores = data.evals?.scores || {};
       const nc = data.evals?.needsConsult || {};
       return allMetrics.every((m) => scores[m.id] !== undefined || nc[m.id]);
     }
+    if (stepId === "risks") {
+      const assessments = data.risks?.assessments || {};
+      return DEFAULT_RISKS.every((r) => assessments[r.id] !== undefined);
+    }
     return getStepFieldKeys(stepId).every((k) => isFieldHandled(k));
   }, [data, getStepFieldKeys, isFieldHandled]);
 
   const getStepCompleteness = useCallback((stepId: string): number => {
     if (stepId === "report") {
-      const steps = ["problem", "concept", "evals", "architecture"];
+      const steps = ["problem", "concept", "evals", "architecture", "risks"];
       const avg = steps.reduce((sum, s) => sum + getStepCompleteness(s), 0) / steps.length;
       return Math.round(avg);
     }
@@ -1726,6 +2084,11 @@ export default function DIPlanningWizard() {
       const nc = data.evals?.needsConsult || {};
       const answered = allMetrics.filter((m) => scores[m.id] !== undefined || nc[m.id]).length;
       return Math.round((answered / allMetrics.length) * 100);
+    }
+    if (stepId === "risks") {
+      const assessments = data.risks?.assessments || {};
+      const reviewed = DEFAULT_RISKS.filter((r) => assessments[r.id] !== undefined).length;
+      return Math.round((reviewed / DEFAULT_RISKS.length) * 100);
     }
     const keys = getStepFieldKeys(stepId);
     if (keys.length === 0) return 0;
@@ -1877,7 +2240,7 @@ export default function DIPlanningWizard() {
 
         {/* Main content */}
         <div style={{ flex: 1, padding: "24px 32px", overflowY: "auto", maxHeight: "calc(100vh - 170px)" }} className="wizard-scroll">
-          <div style={{ maxWidth: 1100 }}>
+          <div style={{ maxWidth: 1400, margin: "0 auto" }}>
             {activeStep === STEPS.length - 1 ? (
               <StepReport data={data} />
             ) : (
@@ -1896,6 +2259,10 @@ export default function DIPlanningWizard() {
                   const nc = data.evals?.needsConsult || {};
                   return allMetrics.filter((m) => scores[m.id] === undefined && !nc[m.id]).length;
                 }
+                if (currentStepId === "risks") {
+                  const ra = data.risks?.assessments || {};
+                  return DEFAULT_RISKS.filter((r) => ra[r.id] === undefined).length;
+                }
                 return getStepFieldKeys(currentStepId).filter((k) => !isFieldHandled(k)).length;
               })();
               return (
@@ -1903,7 +2270,11 @@ export default function DIPlanningWizard() {
                   {!canGoNext && activeStep < STEPS.length - 1 && (
                     <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 12, padding: "8px 14px", borderRadius: 8, background: "#dc262610", border: "1px solid #dc262630" }}>
                       <AlertTriangle size={14} style={{ color: "#fca5a5", flexShrink: 0 }} />
-                      <span style={{ fontSize: 12, color: "#fca5a5" }}>Liko {unhandled} neužpildytų laukų. Užpildykite arba pažymėkite „Nežinau".</span>
+                      <span style={{ fontSize: 12, color: "#fca5a5" }}>
+                        {currentStepId === "risks"
+                          ? `Liko ${unhandled} neįvertintų rizikų. Paspauskite ant kiekvienos rizikos ir nustatykite statusą.`
+                          : `Liko ${unhandled} neužpildytų laukų. Užpildykite arba pažymėkite „Nežinau".`}
+                      </span>
                     </div>
                   )}
                   <div style={{ display: "flex", justifyContent: "space-between" }}>
