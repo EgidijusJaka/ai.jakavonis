@@ -2171,7 +2171,7 @@ export default function DIPlanningWizard() {
         })}
       </div>
 
-      <div style={{ display: "flex", minHeight: "calc(100vh - 170px)" }}>
+      <div style={{ display: "flex" }}>
         {/* Side navigation */}
         <div style={{ width: 220, minWidth: 220, background: "#1e293b", borderRight: "1px solid #334155", padding: "16px 0" }}>
           {STEPS.map((step, i) => {
@@ -2240,7 +2240,7 @@ export default function DIPlanningWizard() {
         </div>
 
         {/* Main content */}
-        <div style={{ flex: 1, padding: "24px 32px", overflowY: "auto", maxHeight: "calc(100vh - 170px)" }} className="wizard-scroll">
+        <div style={{ flex: 1, padding: "24px 32px" }}>
           <div style={{ maxWidth: 1400, margin: "0 auto" }}>
             {activeStep === STEPS.length - 1 ? (
               <StepReport data={data} />
