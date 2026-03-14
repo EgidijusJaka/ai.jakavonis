@@ -2106,7 +2106,7 @@ export default function DIPlanningWizard() {
       <div style={{ background: "linear-gradient(135deg, #0f172a 0%, #1e293b 100%)", borderBottom: "1px solid #334155", padding: "12px 28px" }}>
         <div style={{ display: "flex", alignItems: "center", gap: 12, marginBottom: 2 }}>
           <Link href="/" style={{ fontSize: 13, color: "#93c5fd", textDecoration: "none", padding: "2px 10px", borderRadius: 4, border: "1px solid #334155", fontWeight: 500, display: "inline-flex", alignItems: "center", gap: 4 }}>
-            <ArrowLeft size={12} /> Grizti
+            <ArrowLeft size={12} /> Grįžti
           </Link>
           <span style={{ fontSize: 13, background: "#1e40af", color: "#93c5fd", padding: "2px 10px", borderRadius: 4, fontWeight: 600, letterSpacing: 1.2, textTransform: "uppercase" }}>Framework</span>
           <span style={{ fontSize: 13, background: "#065f46", color: "#6ee7b7", padding: "2px 10px", borderRadius: 4, fontWeight: 600, letterSpacing: 1.2, textTransform: "uppercase" }}>EU AI Act</span>
