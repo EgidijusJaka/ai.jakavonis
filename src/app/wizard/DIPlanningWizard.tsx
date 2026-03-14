@@ -2101,8 +2101,9 @@ export default function DIPlanningWizard() {
 
   return (
     <div style={{ fontFamily: "'Source Sans 3', 'Segoe UI', system-ui, sans-serif", background: "#0f172a", color: "#e2e8f0" }}>
-      {/* Header */}
-      <div style={{ background: "linear-gradient(135deg, #0f172a 0%, #1e293b 100%)", borderBottom: "1px solid #334155", padding: "20px 28px" }}>
+      {/* Header + Step indicator (sticky) */}
+      <div style={{ position: "sticky", top: 0, zIndex: 50 }}>
+      <div style={{ background: "linear-gradient(135deg, #0f172a 0%, #1e293b 100%)", borderBottom: "1px solid #334155", padding: "12px 28px" }}>
         <div style={{ display: "flex", alignItems: "center", gap: 12, marginBottom: 2 }}>
           <Link href="/" style={{ fontSize: 13, color: "#93c5fd", textDecoration: "none", padding: "2px 10px", borderRadius: 4, border: "1px solid #334155", fontWeight: 500, display: "inline-flex", alignItems: "center", gap: 4 }}>
             <ArrowLeft size={12} /> Grizti
@@ -2110,19 +2111,18 @@ export default function DIPlanningWizard() {
           <span style={{ fontSize: 13, background: "#1e40af", color: "#93c5fd", padding: "2px 10px", borderRadius: 4, fontWeight: 600, letterSpacing: 1.2, textTransform: "uppercase" }}>Framework</span>
           <span style={{ fontSize: 13, background: "#065f46", color: "#6ee7b7", padding: "2px 10px", borderRadius: 4, fontWeight: 600, letterSpacing: 1.2, textTransform: "uppercase" }}>EU AI Act</span>
         </div>
-        <h1 style={{ fontSize: 24, fontWeight: 700, margin: "8px 0 4px", color: "#f1f5f9", letterSpacing: -0.5, display: "flex", alignItems: "center", gap: 8 }}>
-          <Scale size={24} /> DI Sistemos Planavimo Vedlys
-        </h1>
-        <p style={{ fontSize: 13, color: "#64748b", margin: 0 }}>
-          Nuo problemos iki prototipo -- struktūrizuotas DI sistemos kūrimo procesas su ES DI Akto atitiktimi ir techninės specifikacijos generavimu
-        </p>
-        <div style={{ display: "flex", gap: 12, marginTop: 12, flexWrap: "wrap" }}>
+        <div style={{ display: "flex", alignItems: "center", gap: 16, flexWrap: "wrap" }}>
+          <h1 style={{ fontSize: 20, fontWeight: 700, margin: "4px 0", color: "#f1f5f9", letterSpacing: -0.5, display: "flex", alignItems: "center", gap: 8, whiteSpace: "nowrap" }}>
+            <Scale size={20} /> DI Sistemos Planavimo Vedlys
+          </h1>
+          <div style={{ display: "flex", gap: 10, flexWrap: "wrap" }}>
           <input value={data._meta?.projectName || ""} onChange={(ev: ChangeEvent<HTMLInputElement>) => setData((d) => ({ ...d, _meta: { ...d._meta, projectName: ev.target.value } }))}
             placeholder="Projekto pavadinimas (pvz., VILYS)" style={{ background: "#1e293b", border: "1px solid #475569", color: "#e2e8f0", padding: "6px 12px", borderRadius: 6, fontSize: 13, width: 240 }} />
           <input value={data._meta?.organization || ""} onChange={(ev: ChangeEvent<HTMLInputElement>) => setData((d) => ({ ...d, _meta: { ...d._meta, organization: ev.target.value } }))}
             placeholder="Organizacija (pvz., ŽŪDC)" style={{ background: "#1e293b", border: "1px solid #475569", color: "#e2e8f0", padding: "6px 12px", borderRadius: 6, fontSize: 13, width: 200 }} />
           <input value={data._meta?.author || ""} onChange={(ev: ChangeEvent<HTMLInputElement>) => setData((d) => ({ ...d, _meta: { ...d._meta, author: ev.target.value } }))}
             placeholder="Autorius" style={{ background: "#1e293b", border: "1px solid #475569", color: "#e2e8f0", padding: "6px 12px", borderRadius: 6, fontSize: 13, width: 200 }} />
+          </div>
         </div>
       </div>
 
@@ -2170,6 +2170,7 @@ export default function DIPlanningWizard() {
           );
         })}
       </div>
+      </div>{/* end sticky wrapper */}
 
       <div style={{ display: "flex" }}>
         {/* Side navigation */}
