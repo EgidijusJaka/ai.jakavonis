@@ -593,7 +593,7 @@ function StepProblem({ data, setData }: StepProps) {
     <div>
       <Card>
         <SectionTitle icon={<FileText size={18} />} title="Problemos aprašymas" subtitle="Apibrėžkite problemą, kurią DI sistema turėtų spręsti" />
-        <TextArea value={p.description || ""} onChange={(v: string) => update("description", v)} placeholder="Pvz.: ŽŪDC kasdien gauna 50-100 dokumentų per @vilys DVS. Kanceliarijos darbuotojai rankiniu būdu skirsto dokumentus pagal skyrius, priskirdami atsakingus asmenis. Procesas užima ~2h/diena, klaidos dažnis ~15%, terminų praleidimas ~8%." rows={4} />
+        <TextArea value={p.description || ""} onChange={(v: string) => update("description", v)} placeholder="Pvz.: Organizacija kasdien gauna 50-100 dokumentų per DVS. Kanceliarijos darbuotojai rankiniu būdu skirsto dokumentus pagal skyrius, priskirdami atsakingus asmenis. Procesas užima ~2h/diena, klaidos dažnis ~15%, terminų praleidimas ~8%." rows={4} />
         <FieldHint fieldKey="problem.description" isEmpty={!p.description?.trim()} />
       </Card>
 
@@ -779,7 +779,7 @@ function StepConcept({ data, setData }: StepProps) {
     <div>
       <Card>
         <SectionTitle icon={<Building2 size={18} />} title="Sistemos vizija" subtitle="Aukšto lygio sistemos aprašymas" />
-        <TextArea value={c.vision || ""} onChange={(v: string) => update("vision", v)} placeholder="Pvz.: Multi-agentu DI sistema, kuri automatiškai klasifikuoja gaunamus dokumentus ŽŪDC @vilys DVS sistemoje, priskiria atsakingus skyrius ir specialistus, stebi terminųs ir aptinka anomalijas organizacijos dokumentų srautuose." rows={3} />
+        <TextArea value={c.vision || ""} onChange={(v: string) => update("vision", v)} placeholder="Pvz.: Multi-agentu DI sistema, kuri automatiškai klasifikuoja gaunamus dokumentus organizacijos DVS sistemoje, priskiria atsakingus skyrius ir specialistus, stebi terminus ir aptinka anomalijas dokumentų srautuose." rows={3} />
         <FieldHint fieldKey="concept.vision" isEmpty={!c.vision?.trim()} isConsulted={fc["concept.vision"]} onConsult={markConsult} onCancelConsult={cancelConsult} />
       </Card>
 
@@ -787,8 +787,8 @@ function StepConcept({ data, setData }: StepProps) {
         <SectionTitle icon={<Plug size={18} />} title="Integracijos taskai" subtitle="Su kokiomis sistemomis DI tures saveikauti?" />
         <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 12 }}>
           {[
-            { key: "inputSystems", label: "Įvesties sistemos", placeholder: "Pvz.: @vilys DVS (SOAP API), El. pastas" },
-            { key: "outputSystems", label: "Išvesties sistemos", placeholder: "Pvz.: @vilys DVS, Pranešimų sistema" },
+            { key: "inputSystems", label: "Įvesties sistemos", placeholder: "Pvz.: DVS (SOAP API), El. pastas" },
+            { key: "outputSystems", label: "Išvesties sistemos", placeholder: "Pvz.: DVS, Pranešimų sistema" },
             { key: "dataSources", label: "Duomenų šaltiniai", placeholder: "Pvz.: Istoriniai dokumentai, Org. struktūra" },
             { key: "orchestration", label: "Orkestracija", placeholder: "Pvz.: n8n, Apache Airflow, Custom" },
           ].map((f) => {
@@ -1244,7 +1244,7 @@ function StepArchitecture({ data, setData }: StepProps) {
 
       <Card>
         <SectionTitle icon={<GitBranch size={18} />} title="Duomenų srautas (Data Flow)" subtitle="Aprašykite, kaip duomenys keliauja per sistema" />
-        <TextArea value={a.dataFlow || ""} onChange={(v: string) => update("dataFlow", v)} placeholder={"1. Dokumentas ateina per @vilys SOAP API (Webhook)\n2. OCR istraukia teksta is PDF/skanuoto dokumento\n3. LLM klasifikuoja: tipas, skyrius, prioritetas, atsakingas\n4. Verslo taisyklės patikrina ir marsrutuoja\n5. Žmogus patvirtina (jei confidence < 85%)\n6. Rezultatas grazinamas i @vilys per SOAP\n7. Metrikos registruojamos Supabase"} rows={7} />
+        <TextArea value={a.dataFlow || ""} onChange={(v: string) => update("dataFlow", v)} placeholder={"1. Dokumentas ateina per DVS SOAP API (Webhook)\n2. OCR ištraukia tekstą iš PDF/skanuoto dokumento\n3. LLM klasifikuoja: tipas, skyrius, prioritetas, atsakingas\n4. Verslo taisyklės patikrina ir maršrutuoja\n5. Žmogus patvirtina (jei confidence < 85%)\n6. Rezultatas grąžinamas į DVS per SOAP\n7. Metrikos registruojamos duomenų bazėje"} rows={7} />
         <FieldHint fieldKey="architecture.dataFlow" isEmpty={!a.dataFlow?.trim()} isConsulted={fc["architecture.dataFlow"]} onConsult={markConsult} onCancelConsult={cancelConsult} />
       </Card>
 
@@ -1289,7 +1289,7 @@ function StepArchitecture({ data, setData }: StepProps) {
 
       <Card>
         <SectionTitle icon={<AlertTriangle size={18} />} title="Rizikos ir mitigacijos" subtitle="Techninės ir organizacines rizikos" />
-        <TextArea value={a.risks || ""} onChange={(v: string) => update("risks", v)} placeholder={"Rizika | Tikimybe | Poveikis | Mitigacija\n------|----------|---------|----------\n@vilys API nestabilumas | Vidutine | Aukstas | Retry logika + cache\nModelio hallucinations | Auksta | Vidutinis | Human-in-the-loop + confidence threshold\nDuomenu nutekejimas | Zema | Kritinis | On-premise diegimas, VPN, audit logai"} rows={6} />
+        <TextArea value={a.risks || ""} onChange={(v: string) => update("risks", v)} placeholder={"Rizika | Tikimybė | Poveikis | Mitigacija\n------|----------|---------|----------\nDVS API nestabilumas | Vidutinė | Aukštas | Retry logika + cache\nModelio hallucinations | Aukšta | Vidutinis | Human-in-the-loop + confidence threshold\nDuomenų nutekėjimas | Žema | Kritinis | On-premise diegimas, VPN, audit logai"} rows={6} />
         <FieldHint fieldKey="architecture.risks" isEmpty={!a.risks?.trim()} isConsulted={fc["architecture.risks"]} onConsult={markConsult} onCancelConsult={cancelConsult} />
       </Card>
     </div>
@@ -2119,7 +2119,7 @@ export default function DIPlanningWizard() {
           <input value={data._meta?.projectName || ""} onChange={(ev: ChangeEvent<HTMLInputElement>) => setData((d) => ({ ...d, _meta: { ...d._meta, projectName: ev.target.value } }))}
             placeholder="Projekto pavadinimas (pvz., VILYS)" style={{ background: "#1e293b", border: "1px solid #475569", color: "#e2e8f0", padding: "6px 12px", borderRadius: 6, fontSize: 13, width: 240 }} />
           <input value={data._meta?.organization || ""} onChange={(ev: ChangeEvent<HTMLInputElement>) => setData((d) => ({ ...d, _meta: { ...d._meta, organization: ev.target.value } }))}
-            placeholder="Organizacija (pvz., ŽŪDC)" style={{ background: "#1e293b", border: "1px solid #475569", color: "#e2e8f0", padding: "6px 12px", borderRadius: 6, fontSize: 13, width: 200 }} />
+            placeholder="Organizacijos pavadinimas" style={{ background: "#1e293b", border: "1px solid #475569", color: "#e2e8f0", padding: "6px 12px", borderRadius: 6, fontSize: 13, width: 200 }} />
           <input value={data._meta?.author || ""} onChange={(ev: ChangeEvent<HTMLInputElement>) => setData((d) => ({ ...d, _meta: { ...d._meta, author: ev.target.value } }))}
             placeholder="Autorius" style={{ background: "#1e293b", border: "1px solid #475569", color: "#e2e8f0", padding: "6px 12px", borderRadius: 6, fontSize: 13, width: 200 }} />
           </div>
