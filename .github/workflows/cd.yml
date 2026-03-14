@@ -112,14 +112,9 @@ jobs:
             docker run -d \
               --name ${{ env.CONTAINER_NAME }} \
               --restart unless-stopped \
-              --network traefik-net \
+              -p 127.0.0.1:3100:3000 \
               -e NODE_ENV=production \
               -e NEXT_TELEMETRY_DISABLED=1 \
-              -l "traefik.enable=true" \
-              -l "traefik.http.routers.ai-jakavonis.rule=Host(\`ai.jakavonis.lt\`)" \
-              -l "traefik.http.routers.ai-jakavonis.entrypoints=websecure" \
-              -l "traefik.http.routers.ai-jakavonis.tls.certresolver=letsencrypt" \
-              -l "traefik.http.services.ai-jakavonis.loadbalancer.server.port=3000" \
               --health-cmd="wget --no-verbose --tries=1 --spider http://localhost:3000/ || exit 1" \
               --health-interval=30s \
               --health-timeout=3s \
@@ -192,14 +187,9 @@ jobs:
             docker run -d \
               --name ${{ env.CONTAINER_NAME }} \
               --restart unless-stopped \
-              --network traefik-net \
+              -p 127.0.0.1:3100:3000 \
               -e NODE_ENV=production \
               -e NEXT_TELEMETRY_DISABLED=1 \
-              -l "traefik.enable=true" \
-              -l "traefik.http.routers.ai-jakavonis.rule=Host(\`ai.jakavonis.lt\`)" \
-              -l "traefik.http.routers.ai-jakavonis.entrypoints=websecure" \
-              -l "traefik.http.routers.ai-jakavonis.tls.certresolver=letsencrypt" \
-              -l "traefik.http.services.ai-jakavonis.loadbalancer.server.port=3000" \
               ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:$PREVIOUS_IMAGE
 
             echo "=== Rollback complete! ==="
