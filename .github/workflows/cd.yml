@@ -1,0 +1,206 @@
+name: CD Pipeline
+
+on:
+  workflow_run:
+    workflows: ["CI Pipeline"]
+    types: [completed]
+    branches: [main]
+
+  workflow_dispatch:
+    inputs:
+      action:
+        description: 'Action to perform'
+        required: true
+        default: 'deploy'
+        type: choice
+        options:
+          - deploy
+          - rollback
+
+env:
+  REGISTRY: ghcr.io
+  IMAGE_NAME: egidijusjaka/ai-jakavonis
+  CONTAINER_NAME: ai-jakavonis
+  DEPLOY_PORT: 3100
+
+jobs:
+  build-and-push:
+    name: Build & Push Docker Image
+    runs-on: ubuntu-latest
+    if: |
+      github.event_name == 'workflow_dispatch' ||
+      github.event.workflow_run.conclusion == 'success'
+
+    permissions:
+      contents: read
+      packages: write
+
+    outputs:
+      image_tag: ${{ steps.meta.outputs.tags }}
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Log in to GitHub Container Registry
+        uses: docker/login-action@v3
+        with:
+          registry: ${{ env.REGISTRY }}
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Extract metadata for Docker
+        id: meta
+        uses: docker/metadata-action@v5
+        with:
+          images: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}
+          tags: |
+            type=sha,prefix=
+            type=raw,value=latest
+
+      - name: Build and push Docker image
+        uses: docker/build-push-action@v6
+        with:
+          context: .
+          push: true
+          tags: ${{ steps.meta.outputs.tags }}
+          labels: ${{ steps.meta.outputs.labels }}
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+
+  deploy:
+    name: Deploy to Contabo
+    runs-on: ubuntu-latest
+    needs: build-and-push
+    if: |
+      (github.event_name == 'workflow_dispatch' && github.event.inputs.action == 'deploy') ||
+      github.event_name == 'workflow_run'
+
+    steps:
+      - name: Setup SSH
+        uses: webfactory/ssh-agent@v0.9.0
+        with:
+          ssh-private-key: ${{ secrets.SSH_PRIVATE_KEY }}
+
+      - name: Add server to known hosts
+        run: |
+          mkdir -p ~/.ssh
+          ssh-keyscan -H ${{ secrets.SSH_HOST }} >> ~/.ssh/known_hosts
+
+      - name: Deploy to server
+        env:
+          SSH_USER: ${{ secrets.SSH_USER }}
+          SSH_HOST: ${{ secrets.SSH_HOST }}
+        run: |
+          ssh $SSH_USER@$SSH_HOST << 'ENDSSH'
+            set -e
+
+            echo "=== Logging in to GitHub Container Registry ==="
+            echo "${{ secrets.GITHUB_TOKEN }}" | docker login ghcr.io -u ${{ github.actor }} --password-stdin
+
+            echo "=== Pulling latest image ==="
+            docker pull ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:latest
+
+            echo "=== Stopping old container (if exists) ==="
+            docker stop ${{ env.CONTAINER_NAME }} 2>/dev/null || true
+            docker rm ${{ env.CONTAINER_NAME }} 2>/dev/null || true
+
+            echo "=== Starting new container ==="
+            docker run -d \
+              --name ${{ env.CONTAINER_NAME }} \
+              --restart unless-stopped \
+              --network traefik-net \
+              -e NODE_ENV=production \
+              -e NEXT_TELEMETRY_DISABLED=1 \
+              -l "traefik.enable=true" \
+              -l "traefik.http.routers.ai-jakavonis.rule=Host(\`ai.jakavonis.lt\`)" \
+              -l "traefik.http.routers.ai-jakavonis.entrypoints=websecure" \
+              -l "traefik.http.routers.ai-jakavonis.tls.certresolver=letsencrypt" \
+              -l "traefik.http.services.ai-jakavonis.loadbalancer.server.port=3000" \
+              --health-cmd="wget --no-verbose --tries=1 --spider http://localhost:3000/ || exit 1" \
+              --health-interval=30s \
+              --health-timeout=3s \
+              --health-retries=3 \
+              --health-start-period=15s \
+              ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:latest
+
+            echo "=== Deployment complete! ==="
+          ENDSSH
+
+      - name: Wait and verify
+        run: |
+          sleep 15
+          echo "=== Checking container ==="
+          ssh ${{ secrets.SSH_USER }}@${{ secrets.SSH_HOST }} "docker ps --format 'table {{.Names}}\t{{.Status}}\t{{.Ports}}' | grep ai-jakavonis"
+
+      - name: Health check
+        run: |
+          ssh ${{ secrets.SSH_USER }}@${{ secrets.SSH_HOST }} "curl -sf http://localhost:${{ env.DEPLOY_PORT }}/ || echo 'Health check warning - container may still be starting'"
+
+      - name: Cleanup old images
+        run: |
+          ssh ${{ secrets.SSH_USER }}@${{ secrets.SSH_HOST }} "docker image prune -af --filter 'until=24h' || true"
+
+      - name: Deployment summary
+        run: |
+          echo "## Deployment Summary" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "- **Image:** ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:latest" >> $GITHUB_STEP_SUMMARY
+          echo "- **Container:** ${{ env.CONTAINER_NAME }}" >> $GITHUB_STEP_SUMMARY
+          echo "- **URL:** https://ai.jakavonis.lt" >> $GITHUB_STEP_SUMMARY
+
+  rollback:
+    name: Rollback Deployment
+    runs-on: ubuntu-latest
+    if: github.event_name == 'workflow_dispatch' && github.event.inputs.action == 'rollback'
+
+    steps:
+      - name: Setup SSH
+        uses: webfactory/ssh-agent@v0.9.0
+        with:
+          ssh-private-key: ${{ secrets.SSH_PRIVATE_KEY }}
+
+      - name: Add server to known hosts
+        run: |
+          mkdir -p ~/.ssh
+          ssh-keyscan -H ${{ secrets.SSH_HOST }} >> ~/.ssh/known_hosts
+
+      - name: Rollback to previous image
+        env:
+          SSH_USER: ${{ secrets.SSH_USER }}
+          SSH_HOST: ${{ secrets.SSH_HOST }}
+        run: |
+          ssh $SSH_USER@$SSH_HOST << 'ENDSSH'
+            set -e
+
+            echo "=== Getting previous image ==="
+            PREVIOUS_IMAGE=$(docker images ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }} --format "{{.Tag}}" | grep -v latest | head -1)
+
+            if [ -z "$PREVIOUS_IMAGE" ]; then
+              echo "No previous image found for rollback!"
+              exit 1
+            fi
+
+            echo "Rolling back to: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:$PREVIOUS_IMAGE"
+
+            docker stop ${{ env.CONTAINER_NAME }} 2>/dev/null || true
+            docker rm ${{ env.CONTAINER_NAME }} 2>/dev/null || true
+
+            docker run -d \
+              --name ${{ env.CONTAINER_NAME }} \
+              --restart unless-stopped \
+              --network traefik-net \
+              -e NODE_ENV=production \
+              -e NEXT_TELEMETRY_DISABLED=1 \
+              -l "traefik.enable=true" \
+              -l "traefik.http.routers.ai-jakavonis.rule=Host(\`ai.jakavonis.lt\`)" \
+              -l "traefik.http.routers.ai-jakavonis.entrypoints=websecure" \
+              -l "traefik.http.routers.ai-jakavonis.tls.certresolver=letsencrypt" \
+              -l "traefik.http.services.ai-jakavonis.loadbalancer.server.port=3000" \
+              ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:$PREVIOUS_IMAGE
+
+            echo "=== Rollback complete! ==="
+          ENDSSH
