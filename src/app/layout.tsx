@@ -22,9 +22,9 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="lt" data-scroll="smooth">
-      <body className="antialiased">
-        {children}
-        <footer style={{ borderTop: "1px solid #334155", padding: "16px 24px", textAlign: "center", fontSize: 13, color: "#64748b", background: "#0f172a" }}>
+      <body className="antialiased" style={{ display: "flex", flexDirection: "column", minHeight: "100vh", margin: 0 }}>
+        <div style={{ flex: 1 }}>{children}</div>
+        <footer style={{ borderTop: "1px solid #334155", padding: "16px 24px", textAlign: "center", fontSize: 13, color: "#64748b", background: "#0f172a", flexShrink: 0 }}>
           © {new Date().getFullYear()} Egidijus Jakavonis | AI-First
         </footer>
       </body>

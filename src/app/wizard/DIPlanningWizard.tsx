@@ -2100,7 +2100,7 @@ export default function DIPlanningWizard() {
   const StepComponent = STEPS[activeStep].component;
 
   return (
-    <div style={{ fontFamily: "'Source Sans 3', 'Segoe UI', system-ui, sans-serif", background: "#0f172a", minHeight: "100vh", color: "#e2e8f0" }}>
+    <div style={{ fontFamily: "'Source Sans 3', 'Segoe UI', system-ui, sans-serif", background: "#0f172a", color: "#e2e8f0" }}>
       {/* Header */}
       <div style={{ background: "linear-gradient(135deg, #0f172a 0%, #1e293b 100%)", borderBottom: "1px solid #334155", padding: "20px 28px" }}>
         <div style={{ display: "flex", alignItems: "center", gap: 12, marginBottom: 2 }}>
