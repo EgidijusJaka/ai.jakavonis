@@ -133,7 +133,6 @@ interface RiskEntry {
   likelihood: RiskLikelihood;
   measures: string;
   status: RiskStatus;
-  userNotes?: string;
 }
 
 interface RisksData {
@@ -1665,7 +1664,7 @@ function StepReport({ data }: ReportStepProps) {
         accuracy: [{ target: "", minimum: "" }, { target: "70", minimum: "60" }, { target: "85", minimum: "75" }, { target: "95", minimum: "90" }],
         robustness: [{ target: "", minimum: "" }, { target: "60", minimum: "50" }, { target: "80", minimum: "70" }, { target: "95", minimum: "85" }],
         latency: [{ target: "", minimum: "" }, { target: "30000", minimum: "60000" }, { target: "10000", minimum: "30000" }, { target: "2000", minimum: "5000" }],
-        bias: [{ target: "", minimum: "" }, { target: "pradeta", minimum: "" }, { target: "<5%", minimum: "<10%" }, { target: "<2%", minimum: "<5%" }],
+        bias: [{ target: "", minimum: "" }, { target: "pradėta", minimum: "" }, { target: "<5%", minimum: "<10%" }, { target: "<2%", minimum: "<5%" }],
         disparate: [{ target: "", minimum: "" }, { target: "identifikuota", minimum: "" }, { target: "matuojama", minimum: "" }, { target: "kompensuojama", minimum: "" }],
         explainability: [{ target: "", minimum: "" }, { target: "2", minimum: "1" }, { target: "4", minimum: "3" }, { target: "5", minimum: "4" }],
         audit_trail: [{ target: "", minimum: "" }, { target: "daliniai", minimum: "" }, { target: "taip", minimum: "taip" }, { target: "taip+analizė", minimum: "taip" }],
@@ -1673,12 +1672,12 @@ function StepReport({ data }: ReportStepProps) {
         confidence: [{ target: "", minimum: "" }, { target: "vidinis", minimum: "" }, { target: "specialistui", minimum: "" }, { target: "visiems", minimum: "specialistui" }],
         adversarial: [{ target: "", minimum: "" }, { target: "bazinė", minimum: "" }, { target: "testai", minimum: "bazinė" }, { target: "nuolatinis", minimum: "testai" }],
         fallback: [{ target: "", minimum: "" }, { target: "klaida", minimum: "" }, { target: "graceful", minimum: "klaida" }, { target: "auto-failover", minimum: "graceful" }],
-        data_quality: [{ target: "", minimum: "" }, { target: "validacija", minimum: "" }, { target: "statistine", minimum: "validacija" }, { target: "anomalijos", minimum: "statistine" }],
+        data_quality: [{ target: "", minimum: "" }, { target: "validacija", minimum: "" }, { target: "statistinė", minimum: "validacija" }, { target: "anomalijos", minimum: "statistinė" }],
         human_override: [{ target: "", minimum: "" }, { target: "techninė", minimum: "" }, { target: "lengva", minimum: "techninė" }, { target: "1-click+audit", minimum: "lengva" }],
         escalation: [{ target: "", minimum: "" }, { target: "ad-hoc", minimum: "" }, { target: "struktūrizuotas", minimum: "" }, { target: "auto+SLA", minimum: "struktūrizuotas" }],
-        domain_validation: [{ target: "", minimum: "" }, { target: "informuoti", minimum: "" }, { target: "peržiūrejo", minimum: "" }, { target: "testavo", minimum: "peržiūrejo" }],
+        domain_validation: [{ target: "", minimum: "" }, { target: "informuoti", minimum: "" }, { target: "peržiūrėjo", minimum: "" }, { target: "testavo", minimum: "peržiūrėjo" }],
         uptime: [{ target: "", minimum: "" }, { target: "95", minimum: "90" }, { target: "99.5", minimum: "99" }, { target: "99.9", minimum: "99.5" }],
-        drift: [{ target: "", minimum: "" }, { target: "rankine", minimum: "" }, { target: "auto", minimum: "" }, { target: "auto+retrain", minimum: "auto" }],
+        drift: [{ target: "", minimum: "" }, { target: "rankinė", minimum: "" }, { target: "auto", minimum: "" }, { target: "auto+retrain", minimum: "auto" }],
         incident: [{ target: "", minimum: "" }, { target: "ad-hoc", minimum: "" }, { target: "struktūrizuotas", minimum: "" }, { target: "auto+alertai", minimum: "struktūrizuotas" }],
         periodic_audit: [{ target: "", minimum: "" }, { target: "kasmetis", minimum: "" }, { target: "kasmetis+išorinis", minimum: "kasmetis" }, { target: "nuolatinis+išorinis", minimum: "kasmetis+išorinis" }],
       };
@@ -1713,14 +1712,14 @@ function StepReport({ data }: ReportStepProps) {
         // Also include raw scores for reference
         _scores: evalsScores,
         _scaleLabels: Object.fromEntries(
-          EVAL_CATEGORIES.flatMap((c) => c.metrics.map((m) => [m.id, evalsScores[m.id] !== undefined ? m.scale[evalsScores[m.id]] : null])).filter(([, v]) => v !== null)
+          EVAL_CATEGORIES.flatMap((c) => c.metrics.map((m) => [m.id, evalsScores[m.id] !== undefined ? m.scale[evalsScores[m.id] as number] : null])).filter(([, v]) => v !== null)
         ),
       },
       architecture: { ...data.architecture },
       risks: {
         assessments: DEFAULT_RISKS.map((r) => {
           const a = (data.risks?.assessments || {})[r.id];
-          return { id: r.id, article: r.article, area: r.area, risk: r.risk, responsible: r.responsible, measures: r.measures, impact: a?.impact || r.impact, likelihood: a?.likelihood || r.likelihood, status: a?.status || r.status, notes: a?.notes || "" };
+          return { id: r.id, article: r.article, area: r.area, risk: r.risk, reason: r.reason, responsible: r.responsible, measures: r.measures, impact: a?.impact || r.impact, likelihood: a?.likelihood || r.likelihood, status: a?.status || r.status, notes: a?.notes || "" };
         }),
       },
       fieldConsult: data.fieldConsult || {},
@@ -1785,6 +1784,7 @@ function StepReport({ data }: ReportStepProps) {
       evals: {
         metrics: docxMetrics,
         testingMethods: data.evals?.testingMethods || [],
+        testingNotes: data.evals?.testingNotes || "",
         _scaleLabels: Object.fromEntries(
           EVAL_CATEGORIES.flatMap((c) => c.metrics.map((m) => [m.id, evalsScores[m.id] !== undefined ? m.scale[evalsScores[m.id] as number] : null])).filter(([, v]) => v !== null)
         ),
@@ -1793,7 +1793,7 @@ function StepReport({ data }: ReportStepProps) {
       risks: {
         assessments: DEFAULT_RISKS.map((r) => {
           const a = (data.risks?.assessments || {})[r.id];
-          return { id: r.id, article: r.article, area: r.area, risk: r.risk, responsible: r.responsible, measures: r.measures, impact: a?.impact || r.impact, likelihood: a?.likelihood || r.likelihood, status: a?.status || r.status, notes: a?.notes || "" };
+          return { id: r.id, article: r.article, area: r.area, risk: r.risk, reason: r.reason, responsible: r.responsible, measures: r.measures, impact: a?.impact || r.impact, likelihood: a?.likelihood || r.likelihood, status: a?.status || r.status, notes: a?.notes || "" };
         }),
       },
       fieldConsult: data.fieldConsult || {},
@@ -1942,6 +1942,7 @@ function StepReport({ data }: ReportStepProps) {
             ) : null;
           })()}
           {(e.testingMethods?.length ?? 0) > 0 && <div style={{ marginTop: 10 }}><RField label="Testavimo metodai" value={(e.testingMethods || []).join(", ")} /></div>}
+          {e.testingNotes?.trim() && <div style={{ marginTop: 6 }}><RField label="Testavimo pastabos" value={e.testingNotes} /></div>}
         </ReportSection>
       </Card>
 

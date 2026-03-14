@@ -545,6 +545,7 @@ function generateDoc(data: any): Document {
     article: string;
     area: string;
     risk: string;
+    reason: string;
     responsible: string;
     measures: string;
     impact: string;
@@ -595,9 +596,12 @@ function generateDoc(data: any): Document {
       content.push(para("Detalūs rizikų aprašymai:", { bold: true, spacing: { before: 200 } }));
       detailedRisks.forEach((r: RiskAssessmentEntry) => {
         content.push(para(`${r.id} — ${r.risk}`, { bold: true, spacing: { before: 150 } }));
+        if (r.reason) {
+          content.push(para(`Reguliacinė priežastis: ${r.reason}`, { color: "666666" }));
+        }
         content.push(para(`Valdymo priemonės: ${r.measures}`));
         if (r.notes) {
-          content.push(para(`Pastabos: ${r.notes}`, { color: "666666" }));
+          content.push(para(`Pastabos: ${r.notes}`));
         }
       });
     }
