@@ -1,0 +1,16 @@
+services:
+  web:
+    build: .
+    container_name: ai-jakavonis
+    restart: unless-stopped
+    ports:
+      - "3100:3000"
+    environment:
+      - NODE_ENV=production
+      - NEXT_TELEMETRY_DISABLED=1
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.ai-jakavonis.rule=Host(`ai.jakavonis.lt`)"
+      - "traefik.http.routers.ai-jakavonis.entrypoints=websecure"
+      - "traefik.http.routers.ai-jakavonis.tls.certresolver=letsencrypt"
+      - "traefik.http.services.ai-jakavonis.loadbalancer.server.port=3000"
