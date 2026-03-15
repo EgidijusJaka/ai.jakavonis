@@ -2117,7 +2117,7 @@ export default function DIPlanningWizard() {
           </h1>
           <div style={{ display: "flex", gap: 10, flexWrap: "wrap" }}>
           <input value={data._meta?.projectName || ""} onChange={(ev: ChangeEvent<HTMLInputElement>) => setData((d) => ({ ...d, _meta: { ...d._meta, projectName: ev.target.value } }))}
-            placeholder="Projekto pavadinimas (pvz., VILYS)" style={{ background: "#1e293b", border: "1px solid #475569", color: "#e2e8f0", padding: "6px 12px", borderRadius: 6, fontSize: 13, width: 240 }} />
+            placeholder="Projekto pavadinimas (pvz., @avilys)" style={{ background: "#1e293b", border: "1px solid #475569", color: "#e2e8f0", padding: "6px 12px", borderRadius: 6, fontSize: 13, width: 240 }} />
           <input value={data._meta?.organization || ""} onChange={(ev: ChangeEvent<HTMLInputElement>) => setData((d) => ({ ...d, _meta: { ...d._meta, organization: ev.target.value } }))}
             placeholder="Organizacijos pavadinimas" style={{ background: "#1e293b", border: "1px solid #475569", color: "#e2e8f0", padding: "6px 12px", borderRadius: 6, fontSize: 13, width: 200 }} />
           <input value={data._meta?.author || ""} onChange={(ev: ChangeEvent<HTMLInputElement>) => setData((d) => ({ ...d, _meta: { ...d._meta, author: ev.target.value } }))}
@@ -2234,9 +2234,6 @@ export default function DIPlanningWizard() {
                 )}
               </div>
             ))}
-            <div style={{ fontSize: 11, color: "#475569", marginTop: 8, fontStyle: "italic", display: "flex", alignItems: "center", gap: 4 }}>
-              <Scale size={11} /> = teisinis vertinimas kiekviename etape
-            </div>
           </div>
         </div>
 
