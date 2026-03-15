@@ -100,7 +100,7 @@ export default function LandingPage() {
           </div>
 
           {/* Stats */}
-          <div className="grid grid-cols-4 gap-8 mt-16 max-w-xl mx-auto">
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-8 mt-16 max-w-xl mx-auto">
             <div>
               <div className="text-3xl font-bold text-primary-light">6</div>
               <div className="text-sm text-muted mt-1">Žingsniai</div>

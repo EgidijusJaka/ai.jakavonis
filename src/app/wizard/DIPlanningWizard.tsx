@@ -364,18 +364,18 @@ interface StepDefinition {
 const RISK_LEVELS: RiskLevel[] = [
   { id: 0, label: "Minimali rizika", color: "#059669", bg: "#05966915", desc: "Rekomendacinis DI taikymo kodeksas" },
   { id: 1, label: "Ribota rizika", color: "#d97706", bg: "#d9770615", desc: "Skaidrumo reikalavimai (Art. 50)" },
-  { id: 2, label: "Auksta rizika", color: "#ea580c", bg: "#ea580c15", desc: "Pilna atitiktis (Art. 6-49, Annex III)" },
-  { id: 3, label: "Nepriimtina rizika", color: "#dc2626", bg: "#dc262615", desc: "Draudziama (Art. 5)" },
+  { id: 2, label: "Aukšta rizika", color: "#ea580c", bg: "#ea580c15", desc: "Pilna atitiktis (Art. 6-49, Annex III)" },
+  { id: 3, label: "Nepriimtina rizika", color: "#dc2626", bg: "#dc262615", desc: "Draudžiama (Art. 5)" },
 ];
 
 const ANNEX_III_CATEGORIES: string[] = [
   "Biometrinė identifikacija ir kategorizavimas",
-  "Kritines infrastruktūros valdymas",
+  "Kritinės infrastruktūros valdymas",
   "Švietimas ir profesinis mokymas",
   "Įdarbinimas ir darbo santykiai",
   "Esminės privačios ir viešosios paslaugos",
   "Teisėsauga",
-  "Migracija, prieglobstis ir sienu kontrolė",
+  "Migracija, prieglobstis ir sienų kontrolė",
   "Teisingumo administravimas ir demokratiniai procesai",
 ];
 
@@ -393,12 +393,12 @@ const STAKEHOLDER_ROLES: StakeholderRole[] = [
 ];
 
 const ARCH_COMPONENTS: ArchComponent[] = [
-  { id: "trigger", label: "Trigeris / Ivestis", icon: Zap, examples: ["Webhook", "SOAP API", "Cron", "El. pastas", "Forma", "Failu stebėjimas"] },
-  { id: "preprocess", label: "Pirminė apdoroja", icon: RefreshCw, examples: ["OCR", "NLP tokenizacija", "Duomenu validavimas", "Formato konvertavimas", "Anonimizacija"] },
+  { id: "trigger", label: "Trigeris / Įvestis", icon: Zap, examples: ["Webhook", "SOAP API", "Cron", "El. paštas", "Forma", "Failų stebėjimas"] },
+  { id: "preprocess", label: "Pirminis apdorojimas", icon: RefreshCw, examples: ["OCR", "NLP tokenizacija", "Duomenų validavimas", "Formato konvertavimas", "Anonimizacija"] },
   { id: "ai_model", label: "DI modelis", icon: Brain, examples: ["LLM (Claude/GPT)", "Klasifikatorius", "NER", "OCR modelis", "Embedding", "Fine-tuned", "Ollama lokalus"] },
-  { id: "logic", label: "Verslo logika", icon: Settings, examples: ["Taisykliu variklis", "Marsrutizavimas", "Prioritetizavimas", "Eskalavimas", "Workflow orkestracija"] },
-  { id: "human", label: "Žmogiškoji priežiūra", icon: Eye, examples: ["Patvirtinimo UI", "Klaidu peržiūra", "Override galimybė", "Eskalavimo taisyklės", "Audit log"] },
-  { id: "output", label: "Išvestis / Veiksmas", icon: Upload, examples: ["Dokumentų sukurimas", "Pranesimai", "DB irasas", "API kvietimas", "Ataskaita", "Uzduoties priskyrimas"] },
+  { id: "logic", label: "Verslo logika", icon: Settings, examples: ["Taisyklių variklis", "Maršrutizavimas", "Prioritetizavimas", "Eskalavimas", "Workflow orkestracija"] },
+  { id: "human", label: "Žmogiškoji priežiūra", icon: Eye, examples: ["Patvirtinimo UI", "Klaidų peržiūra", "Override galimybė", "Eskalavimo taisyklės", "Audit log"] },
+  { id: "output", label: "Išvestis / Veiksmas", icon: Upload, examples: ["Dokumentų sukūrimas", "Pranešimai", "DB įrašas", "API kvietimas", "Ataskaita", "Užduoties priskyrimas"] },
   { id: "storage", label: "Duomenų saugykla", icon: Database, examples: ["PostgreSQL", "Supabase", "Vector DB", "Failu sistema", "Redis cache"] },
   { id: "monitoring", label: "Stebėsena", icon: Radio, examples: ["Metrikos dashboard", "Anomalijų detektorius", "Drift stebėjimas", "Logai", "Alertai"] },
 ];
@@ -439,9 +439,9 @@ const EVAL_CATEGORIES: EvalCategory[] = [
     title: "Saugumas ir atsparumas",
     icon: ShieldAlert,
     metrics: [
-      { id: "adversarial", name: "Adversarinis atsparumas", question: "Ar sistema apsaugota nuo tyciniu manipuliavimu?", scale: ["Neapsaugota", "Bazine validacija", "Adversariniai testai", "Nuolatinis monitoringas"], weight: 4, aiActRef: "Art. 15(5) – kibernetinis saugumas", stakeholders: ["Saugumo specialistai"] },
+      { id: "adversarial", name: "Adversarinis atsparumas", question: "Ar sistema apsaugota nuo tyčinių manipuliavimų?", scale: ["Neapsaugota", "Bazinė validacija", "Adversariniai testai", "Nuolatinis monitoringas"], weight: 4, aiActRef: "Art. 15(5) – kibernetinis saugumas", stakeholders: ["Saugumo specialistai"] },
       { id: "fallback", name: "Fallback mechanizmas", question: "Kas nutinka kai DI sistema klysta arba neveikia?", scale: ["Sistema sustoja", "Klaidos pranešimas", "Graceful degradation", "Auto-failover su žmogumi"], weight: 5, aiActRef: "Art. 15(4) – patvarumas", stakeholders: ["IT architektai", "Proceso savininkai"], critical: true },
-      { id: "data_quality", name: "Duomenų kokybės kontrolė", question: "Ar uztikrinama ivesties duomenų kokybe?", scale: ["Nekontroliuojama", "Bazine validacija", "Statistine kontrolė", "Su anomaliju aptikimu"], weight: 4, aiActRef: "Art. 10 – duomenų valdymas", stakeholders: ["Duomenu inžinieriai", "Domeno ekspertai"] },
+      { id: "data_quality", name: "Duomenų kokybės kontrolė", question: "Ar užtikrinama įvesties duomenų kokybė?", scale: ["Nekontroliuojama", "Bazinė validacija", "Statistinė kontrolė", "Su anomalijų aptikimu"], weight: 4, aiActRef: "Art. 10 – duomenų valdymas", stakeholders: ["Duomenų inžinieriai", "Domeno ekspertai"] },
     ],
   },
   {
@@ -456,13 +456,13 @@ const EVAL_CATEGORIES: EvalCategory[] = [
   },
   {
     id: "operational",
-    title: "Operacines ir stebesenos metrikos",
+    title: "Operacinės ir stebėsenos metrikos",
     icon: Radio,
     metrics: [
       { id: "uptime", name: "Veikimo laikas (Uptime)", question: "Koks sistemos prieinamumo reikalavimas?", scale: ["<95%", "95-99%", "99-99.5%", "99.9%+"], weight: 3, aiActRef: "", stakeholders: ["IT architektai", "DevOps"] },
       { id: "drift", name: "Modelio drift stebėsena", question: "Ar stebimas modelio veikimo pablogėjimas laikui bėgant?", scale: ["Nestebimas", "Rankinė peržiūra", "Automatinis aptikimas", "Su auto-retrain"], weight: 4, aiActRef: "Art. 72 – po pateikimo stebėsena", stakeholders: ["ML inžinieriai", "Domeno ekspertai"] },
-      { id: "incident", name: "Incidentų valdymas", question: "Ar yra incidentų registravimo ir eskalavimo procesas?", scale: ["Nėra", "Ad hoc", "Struktūrizuotas", "Su automatiniais alertais"], weight: 5, aiActRef: "Art. 73 – rimtu incidentų pranešimas", stakeholders: ["Operacijų komanda", "Vadovybė", "Teisininkai"], critical: true },
-      { id: "periodic_audit", name: "Periodinis auditas", question: "Ar atliekamas periodinis DI sistemos auditas?", scale: ["Nėra", "Kasmetis vidinis", "Kasmetis + išorinis", "Nuolatinis + išorinis"], weight: 4, aiActRef: "Art. 9(9) – dokumentavimas ir peržiūra", stakeholders: ["DI governance", "Išoriniai auditoriai"] },
+      { id: "incident", name: "Incidentų valdymas", question: "Ar yra incidentų registravimo ir eskalavimo procesas?", scale: ["Nėra", "Ad hoc", "Struktūrizuotas", "Su automatiniais alertais"], weight: 5, aiActRef: "Art. 73 – rimtų incidentų pranešimas", stakeholders: ["Operacijų komanda", "Vadovybė", "Teisininkai"], critical: true },
+      { id: "periodic_audit", name: "Periodinis auditas", question: "Ar atliekamas periodinis DI sistemos auditas?", scale: ["Nėra", "Kasmetinis vidinis", "Kasmetinis + išorinis", "Nuolatinis + išorinis"], weight: 4, aiActRef: "Art. 9(9) – dokumentavimas ir peržiūra", stakeholders: ["DI governance", "Išoriniai auditoriai"] },
     ],
   },
 ];
@@ -599,7 +599,7 @@ function StepProblem({ data, setData }: StepProps) {
 
       <Card>
         <SectionTitle icon={<Target size={18} />} title="Dabartinė situacija (AS-IS)" subtitle="Kaip problema sprendžiama dabar?" />
-        <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 12 }}>
+        <div className="wiz-grid-2" style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 12 }}>
           <div>
             <label style={{ fontSize: 12, color: "#64748b", display: "block", marginBottom: 4 }}>Dabartinis procesas</label>
             <TextArea value={p.currentProcess || ""} onChange={(v: string) => update("currentProcess", v)} placeholder="Rankinis dokumentų skirstymas..." rows={3} />
@@ -611,7 +611,7 @@ function StepProblem({ data, setData }: StepProps) {
             <FieldHint fieldKey="problem.painPoints" isEmpty={!p.painPoints?.trim()} />
           </div>
         </div>
-        <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr", gap: 12, marginTop: 12 }}>
+        <div className="wiz-grid-3" style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr", gap: 12, marginTop: 12 }}>
           <div>
             <label style={{ fontSize: 12, color: "#64748b", display: "block", marginBottom: 4 }}>Laikas (val./dieną)</label>
             <Input value={p.timeSpent || ""} onChange={(v: string) => update("timeSpent", v)} placeholder="2" style={{ width: "100%" }} />
@@ -687,12 +687,12 @@ function StepProblem({ data, setData }: StepProps) {
       </Card>
 
       <Card>
-        <SectionTitle icon={<Lightbulb size={18} />} title="Kodėl DI?" subtitle="Pagriskite, kodėl DI yra tinkamas sprendimąs" />
+        <SectionTitle icon={<Lightbulb size={18} />} title="Kodėl DI?" subtitle="Pagrįskite, kodėl DI yra tinkamas sprendimas" />
         <TextArea value={p.whyAI || ""} onChange={(v: string) => update("whyAI", v)} placeholder="Pvz.: Dokumentų klasifikavimas pagal turinį reikalauja natūralios kalbos supratimo, kurio neįmanoma realizuoti taisyklėmis. DI gali pasiekti >90% tikslumą su žmogiškąja priežiūra (human-in-the-loop)." rows={3} />
         <FieldHint fieldKey="problem.whyAI" isEmpty={!p.whyAI?.trim()} />
         <div style={{ marginTop: 12 }}>
-          <label style={{ fontSize: 12, color: "#64748b", display: "block", marginBottom: 6 }}>Ar svarstyete alternatyvas be DI?</label>
-          <div style={{ display: "flex", gap: 8 }}>
+          <label style={{ fontSize: 12, color: "#64748b", display: "block", marginBottom: 6 }}>Ar svarstėte alternatyvas be DI?</label>
+          <div className="wiz-alternatives" style={{ display: "flex", gap: 8 }}>
             {["Taisyklėmis pagrįstas", "RPA (automatizacija)", "Papildomas personalas", "Proceso pertvarka"].map((alt) => {
               const isSelected = (p.alternatives || []).includes(alt);
               return (
@@ -722,7 +722,7 @@ function StepProblem({ data, setData }: StepProps) {
 
       <Card>
         <SectionTitle icon={<Users size={18} />} title="Suinteresuotosios šalys" subtitle={<span style={{ display: "inline-flex", alignItems: "center", gap: 4 }}>Kas turi dalyvauti sprendimų priėmime? (<Scale size={12} /> = ne tik technikai!)</span> as unknown as string} />
-        <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 8, marginTop: 8 }}>
+        <div className="wiz-grid-2" style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 8, marginTop: 8 }}>
           {STAKEHOLDER_ROLES.map((s) => {
             const isSelected = (p.stakeholders || []).includes(s.id);
             const IconComp = s.icon;
@@ -784,8 +784,8 @@ function StepConcept({ data, setData }: StepProps) {
       </Card>
 
       <Card>
-        <SectionTitle icon={<Plug size={18} />} title="Integracijos taskai" subtitle="Su kokiomis sistemomis DI tures saveikauti?" />
-        <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 12 }}>
+        <SectionTitle icon={<Plug size={18} />} title="Integracijos taškai" subtitle="Su kokiomis sistemomis DI turės sąveikauti?" />
+        <div className="wiz-grid-2" style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 12 }}>
           {[
             { key: "inputSystems", label: "Įvesties sistemos", placeholder: "Pvz.: DVS (SOAP API), El. pastas" },
             { key: "outputSystems", label: "Išvesties sistemos", placeholder: "Pvz.: DVS, Pranešimų sistema" },
@@ -838,12 +838,12 @@ function StepConcept({ data, setData }: StepProps) {
       </Card>
 
       <Card>
-        <SectionTitle icon={<Eye size={18} />} title="Žmogiškoji priežiūra (Human Oversight)" subtitle="Art. 14 -- kaip žmogus kontroliuos DI sprendimus?" />
+        <SectionTitle icon={<Eye size={18} />} title="Žmogiškoji priežiūra (Human Oversight)" subtitle="Art. 14 — kaip žmogus kontroliuos DI sprendimus?" />
         <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
           {[
-            { id: "hitl", label: "Human-in-the-Loop", desc: "Žmogus patvirtina kiekviena DI sprendimą pries veiksma", level: "Auksciausias" },
-            { id: "hotl", label: "Human-on-the-Loop", desc: "DI veikia autonomiskai, žmogus stebi ir gali sustabdyti", level: "Vidutinis" },
-            { id: "hocl", label: "Human-over-the-Loop", desc: "Žmogus nustato taisyklės ir periodiskai peržiūri", level: "Bazinis" },
+            { id: "hitl", label: "Human-in-the-Loop", desc: "Žmogus patvirtina kiekvieną DI sprendimą prieš veiksmą", level: "Aukščiausias" },
+            { id: "hotl", label: "Human-on-the-Loop", desc: "DI veikia autonomiškai, žmogus stebi ir gali sustabdyti", level: "Vidutinis" },
+            { id: "hocl", label: "Human-over-the-Loop", desc: "Žmogus nustato taisykles ir periodiškai peržiūri", level: "Bazinis" },
             { id: "auto", label: "Pilnai automatinis", desc: "DI veikia be žmogiškosios priežiūros", level: "Nėra" },
           ].map((opt) => {
             const isSelected = c.oversightLevel === opt.id;
@@ -876,14 +876,14 @@ function StepConcept({ data, setData }: StepProps) {
 
       <Card>
         <SectionTitle icon={<Lock size={18} />} title="Duomenų apsauga ir BDAR" subtitle="Asmens duomenų tvarkymas DI sistemoje" />
-        <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 12 }}>
+        <div className="wiz-grid-2" style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 12 }}>
           <div>
             <label style={{ fontSize: 12, color: "#64748b", display: "block", marginBottom: 4 }}>Tvarkomi asmens duomenys</label>
             <TextArea value={c.personalData || ""} onChange={(v: string) => update("personalData", v)} placeholder="Vardai, pareigos, el. pasto adresai dokumentuose..." rows={2} />
             <FieldHint fieldKey="concept.personalData" isEmpty={!c.personalData?.trim()} isConsulted={fc["concept.personalData"]} onConsult={markConsult} onCancelConsult={cancelConsult} />
           </div>
           <div>
-            <label style={{ fontSize: 12, color: "#64748b", display: "block", marginBottom: 4 }}>Duomenu minimizavimas</label>
+            <label style={{ fontSize: 12, color: "#64748b", display: "block", marginBottom: 4 }}>Duomenų minimizavimas</label>
             <TextArea value={c.dataMinimization || ""} onChange={(v: string) => update("dataMinimization", v)} placeholder="Kaip uztikriname, kad naudojami tik butini duomenys..." rows={2} />
             <FieldHint fieldKey="concept.dataMinimization" isEmpty={!c.dataMinimization?.trim()} isConsulted={fc["concept.dataMinimization"]} onConsult={markConsult} onCancelConsult={cancelConsult} />
           </div>
@@ -894,7 +894,7 @@ function StepConcept({ data, setData }: StepProps) {
             { id: "dpia", label: "DPIA atliktas" },
             { id: "legal_basis", label: "Teisinis pagrindas apibrėžtas" },
             { id: "retention", label: "Saugojimo terminai nustatyti" },
-            { id: "subject_rights", label: "Duomenu subjektu teises" },
+            { id: "subject_rights", label: "Duomenų subjektų teisės" },
           ].map((check) => {
             const isChecked = (c.gdprChecks || []).includes(check.id);
             return (
@@ -918,11 +918,11 @@ function StepConcept({ data, setData }: StepProps) {
 
       <Card>
         <SectionTitle icon={<Calendar size={18} />} title="Diegimo planas" subtitle="Etapai ir laiko planas" />
-        <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr", gap: 12 }}>
+        <div className="wiz-grid-3" style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr", gap: 12 }}>
           {[
-            { key: "phase1", label: "1 faze: PoC / Sandbox", placeholder: "Trukmė, apimtis..." },
-            { key: "phase2", label: "2 faze: Pilotas", placeholder: "Ribota aplinka, testavimas..." },
-            { key: "phase3", label: "3 faze: Produkcija", placeholder: "Pilnas diegimas..." },
+            { key: "phase1", label: "1 fazė: PoC / Sandbox", placeholder: "Trukmė, apimtis..." },
+            { key: "phase2", label: "2 fazė: Pilotas", placeholder: "Ribota aplinka, testavimas..." },
+            { key: "phase3", label: "3 fazė: Produkcija", placeholder: "Pilnas diegimas..." },
           ].map((f) => (
             <div key={f.key}>
               <label style={{ fontSize: 12, color: "#64748b", display: "block", marginBottom: 4 }}>{f.label}</label>
@@ -985,7 +985,7 @@ function StepEvals({ data, setData }: StepProps) {
     <div>
       {/* Score header */}
       <Card style={{ background: "linear-gradient(135deg, #1e293b, #0f172a)" }}>
-        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", flexWrap: "wrap", gap: 16 }}>
+        <div className="wiz-report-header" style={{ display: "flex", justifyContent: "space-between", alignItems: "center", flexWrap: "wrap", gap: 16 }}>
           <div>
             <SectionTitle icon={<BarChart3 size={18} />} title="DI Sistemos Vertinimo Metrikos" subtitle="Įvertinkite kiekvieną metriką 4 lygių skalėje (0-3). Kritinės metrikos pažymėtos raudonai." />
           </div>
@@ -1062,7 +1062,7 @@ function StepEvals({ data, setData }: StepProps) {
                     </div>
 
                     {/* Scale buttons */}
-                    <div style={{ display: "flex", gap: 6, flexWrap: "wrap" }}>
+                    <div className="wiz-scale-btns" style={{ display: "flex", gap: 6, flexWrap: "wrap" }}>
                       {metric.scale.map((label, si) => {
                         const isSelected = val === si;
                         const bc = btnColors[si];
@@ -1128,7 +1128,7 @@ function StepEvals({ data, setData }: StepProps) {
       <Card>
         <SectionTitle icon={<FlaskConical size={18} />} title="Testavimo strategija" subtitle="Kaip bus tikrinamos metrikos?" />
         <div style={{ display: "flex", flexWrap: "wrap", gap: 8, marginBottom: 12 }}>
-          {["Unit testai", "Integraciniai testai", "A/B testavimas", "Adversariniai testai", "Raudonoji komanda", "Naudotoju testavimas", "Streso testai", "Regresijos testai"].map((t) => {
+          {["Unit testai", "Integraciniai testai", "A/B testavimas", "Adversariniai testai", "Raudonoji komanda", "Naudotojų testavimas", "Streso testai", "Regresijos testai"].map((t) => {
             const isSelected = (e.testingMethods || []).includes(t);
             return (
               <button key={t} onClick={() => {
@@ -1178,7 +1178,7 @@ function StepArchitecture({ data, setData }: StepProps) {
     <div>
       <Card>
         <SectionTitle icon={<Puzzle size={18} />} title="Architektūros komponentai" subtitle="Pasirinkite ir sukonfigūruokite sistemos komponentus" />
-        <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 10 }}>
+        <div className="wiz-grid-2" style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 10 }}>
           {ARCH_COMPONENTS.map((comp) => {
             const isSelected = (a.selectedComponents || []).includes(comp.id);
             const isOpen = selectedComp === comp.id;
@@ -1243,7 +1243,7 @@ function StepArchitecture({ data, setData }: StepProps) {
       </Card>
 
       <Card>
-        <SectionTitle icon={<GitBranch size={18} />} title="Duomenų srautas (Data Flow)" subtitle="Aprašykite, kaip duomenys keliauja per sistema" />
+        <SectionTitle icon={<GitBranch size={18} />} title="Duomenų srautas (Data Flow)" subtitle="Aprašykite, kaip duomenys keliauja per sistemą" />
         <TextArea value={a.dataFlow || ""} onChange={(v: string) => update("dataFlow", v)} placeholder={"1. Dokumentas ateina per DVS SOAP API (Webhook)\n2. OCR ištraukia tekstą iš PDF/skanuoto dokumento\n3. LLM klasifikuoja: tipas, skyrius, prioritetas, atsakingas\n4. Verslo taisyklės patikrina ir maršrutuoja\n5. Žmogus patvirtina (jei confidence < 85%)\n6. Rezultatas grąžinamas į DVS per SOAP\n7. Metrikos registruojamos duomenų bazėje"} rows={7} />
         <FieldHint fieldKey="architecture.dataFlow" isEmpty={!a.dataFlow?.trim()} isConsulted={fc["architecture.dataFlow"]} onConsult={markConsult} onCancelConsult={cancelConsult} />
       </Card>
@@ -1273,22 +1273,22 @@ function StepArchitecture({ data, setData }: StepProps) {
           })}
         </div>
         <FieldHint fieldKey="architecture.infrastructure" isEmpty={!a.infrastructure} isConsulted={fc["architecture.infrastructure"]} onConsult={markConsult} onCancelConsult={cancelConsult} />
-        <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 12, marginTop: 12 }}>
+        <div className="wiz-grid-2" style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 12, marginTop: 12 }}>
           <div>
             <label style={{ fontSize: 12, color: "#64748b", display: "block", marginBottom: 4 }}>Saugumo reikalavimai</label>
-            <TextArea value={a.securityReqs || ""} onChange={(v: string) => update("securityReqs", v)} placeholder="Tinklo izoliacija, sifravimas, prieigos kontrole..." rows={3} />
+            <TextArea value={a.securityReqs || ""} onChange={(v: string) => update("securityReqs", v)} placeholder="Tinklo izoliacija, šifravimas, prieigos kontrolė..." rows={3} />
             <FieldHint fieldKey="architecture.securityReqs" isEmpty={!a.securityReqs?.trim()} isConsulted={fc["architecture.securityReqs"]} onConsult={markConsult} onCancelConsult={cancelConsult} />
           </div>
           <div>
             <label style={{ fontSize: 12, color: "#64748b", display: "block", marginBottom: 4 }}>Mastelio reikalavimai</label>
-            <TextArea value={a.scaleReqs || ""} onChange={(v: string) => update("scaleReqs", v)} placeholder="Apkrovos lukesciai, augimo planas..." rows={3} />
+            <TextArea value={a.scaleReqs || ""} onChange={(v: string) => update("scaleReqs", v)} placeholder="Apkrovos lūkesčiai, augimo planas..." rows={3} />
             <FieldHint fieldKey="architecture.scaleReqs" isEmpty={!a.scaleReqs?.trim()} isConsulted={fc["architecture.scaleReqs"]} onConsult={markConsult} onCancelConsult={cancelConsult} />
           </div>
         </div>
       </Card>
 
       <Card>
-        <SectionTitle icon={<AlertTriangle size={18} />} title="Rizikos ir mitigacijos" subtitle="Techninės ir organizacines rizikos" />
+        <SectionTitle icon={<AlertTriangle size={18} />} title="Rizikos ir mitigacijos" subtitle="Techninės ir organizacinės rizikos" />
         <TextArea value={a.risks || ""} onChange={(v: string) => update("risks", v)} placeholder={"Rizika | Tikimybė | Poveikis | Mitigacija\n------|----------|---------|----------\nDVS API nestabilumas | Vidutinė | Aukštas | Retry logika + cache\nModelio hallucinations | Aukšta | Vidutinis | Human-in-the-loop + confidence threshold\nDuomenų nutekėjimas | Žema | Kritinis | On-premise diegimas, VPN, audit logai"} rows={6} />
         <FieldHint fieldKey="architecture.risks" isEmpty={!a.risks?.trim()} isConsulted={fc["architecture.risks"]} onConsult={markConsult} onCancelConsult={cancelConsult} />
       </Card>
@@ -1403,7 +1403,7 @@ function StepRisks({ data, setData }: StepProps) {
         <SectionTitle icon={<ShieldAlert size={18} />} title="ES DI Akto rizikų registras" subtitle="Įvertinkite kiekvieną riziką pagal jūsų sistemos kontekstą. Keiskite statusą, poveikį ir tikimybę." />
 
         {/* Stats */}
-        <div style={{ display: "grid", gridTemplateColumns: "repeat(4, 1fr)", gap: 10, marginBottom: 16 }}>
+        <div className="wiz-grid-4" style={{ display: "grid", gridTemplateColumns: "repeat(4, 1fr)", gap: 10, marginBottom: 16 }}>
           {[
             { label: "Kritinės", count: stats.critical, color: "#ef4444" },
             { label: "Aukšto poveikio", count: stats.high, color: "#f97316" },
@@ -1516,7 +1516,7 @@ function StepRisks({ data, setData }: StepProps) {
               </div>
 
               {/* Editable fields */}
-              <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr", gap: 12, paddingTop: 12, borderTop: "1px solid #334155" }}>
+              <div className="wiz-modal-grid" style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr", gap: 12, paddingTop: 12, borderTop: "1px solid #334155" }}>
                 <div>
                   <label style={{ fontSize: 10, color: "#64748b", letterSpacing: 2, textTransform: "uppercase", display: "block", marginBottom: 6 }}>Poveikis</label>
                   <select value={selData.impact} onChange={(e) => updateAssessment(selected.id, "impact", e.target.value)}
@@ -1569,7 +1569,7 @@ function StepRisks({ data, setData }: StepProps) {
 // STEP 6: ATASKAITA / TECHNINE SPECIFIKACIJA
 // ============================================================
 
-const RISK_MAP: Record<number, string> = { 0: "Minimali rizika", 1: "Ribota rizika (Art. 50)", 2: "Auksta rizika (Art. 6-49)", 3: "Nepriimtina (Art. 5)" };
+const RISK_MAP: Record<number, string> = { 0: "Minimali rizika", 1: "Ribota rizika (Art. 50)", 2: "Aukšta rizika (Art. 6-49)", 3: "Nepriimtina (Art. 5)" };
 const OVERSIGHT_MAP: Record<string, string> = { hitl: "Human-in-the-Loop", hotl: "Human-on-the-Loop", hocl: "Human-over-the-Loop", auto: "Pilnai automatinis" };
 const INFRA_MAP: Record<string, string> = { on_premise: "On-Premise", private_cloud: "Privati debesija", public_cloud: "Viešoji debesija", hybrid: "Hibridinė", govai_sandbox: "GovAI smėliadėžė" };
 const STAKEHOLDER_MAP: Record<string, string> = { business: "Verslo vadovai", process: "Proceso savininkai", legal: "Teisininkai", dpo: "DAP", ethics: "Etikos komisija", it: "IT architektai", ml: "ML inžinieriai", security: "Saugumo spec.", users: "Naudotojai", governance: "DI governance" };
@@ -1647,6 +1647,73 @@ interface ScaleMapping {
   minimum: string;
 }
 
+// Shared scaleToMetric mapping (used by both JSON and DOCX export)
+const SCALE_MAPPINGS: Record<string, ScaleMapping[]> = {
+  accuracy: [{ target: "", minimum: "" }, { target: "70", minimum: "60" }, { target: "85", minimum: "75" }, { target: "95", minimum: "90" }],
+  robustness: [{ target: "", minimum: "" }, { target: "60", minimum: "50" }, { target: "80", minimum: "70" }, { target: "95", minimum: "85" }],
+  latency: [{ target: "", minimum: "" }, { target: "30000", minimum: "60000" }, { target: "10000", minimum: "30000" }, { target: "2000", minimum: "5000" }],
+  bias: [{ target: "", minimum: "" }, { target: "pradėta", minimum: "" }, { target: "<5%", minimum: "<10%" }, { target: "<2%", minimum: "<5%" }],
+  disparate: [{ target: "", minimum: "" }, { target: "identifikuota", minimum: "" }, { target: "matuojama", minimum: "" }, { target: "kompensuojama", minimum: "" }],
+  explainability: [{ target: "", minimum: "" }, { target: "2", minimum: "1" }, { target: "4", minimum: "3" }, { target: "5", minimum: "4" }],
+  audit_trail: [{ target: "", minimum: "" }, { target: "daliniai", minimum: "" }, { target: "taip", minimum: "taip" }, { target: "taip+analizė", minimum: "taip" }],
+  user_notice: [{ target: "", minimum: "" }, { target: "ToS", minimum: "" }, { target: "taip", minimum: "taip" }, { target: "interaktyvus", minimum: "taip" }],
+  confidence: [{ target: "", minimum: "" }, { target: "vidinis", minimum: "" }, { target: "specialistui", minimum: "" }, { target: "visiems", minimum: "specialistui" }],
+  adversarial: [{ target: "", minimum: "" }, { target: "bazinė", minimum: "" }, { target: "testai", minimum: "bazinė" }, { target: "nuolatinis", minimum: "testai" }],
+  fallback: [{ target: "", minimum: "" }, { target: "klaida", minimum: "" }, { target: "graceful", minimum: "klaida" }, { target: "auto-failover", minimum: "graceful" }],
+  data_quality: [{ target: "", minimum: "" }, { target: "validacija", minimum: "" }, { target: "statistinė", minimum: "validacija" }, { target: "anomalijos", minimum: "statistinė" }],
+  human_override: [{ target: "", minimum: "" }, { target: "techninė", minimum: "" }, { target: "lengva", minimum: "techninė" }, { target: "1-click+audit", minimum: "lengva" }],
+  escalation: [{ target: "", minimum: "" }, { target: "ad-hoc", minimum: "" }, { target: "struktūrizuotas", minimum: "" }, { target: "auto+SLA", minimum: "struktūrizuotas" }],
+  domain_validation: [{ target: "", minimum: "" }, { target: "informuoti", minimum: "" }, { target: "peržiūrėjo", minimum: "" }, { target: "testavo", minimum: "peržiūrėjo" }],
+  uptime: [{ target: "", minimum: "" }, { target: "95", minimum: "90" }, { target: "99.5", minimum: "99" }, { target: "99.9", minimum: "99.5" }],
+  drift: [{ target: "", minimum: "" }, { target: "rankinė", minimum: "" }, { target: "auto", minimum: "" }, { target: "auto+retrain", minimum: "auto" }],
+  incident: [{ target: "", minimum: "" }, { target: "ad-hoc", minimum: "" }, { target: "struktūrizuotas", minimum: "" }, { target: "auto+alertai", minimum: "struktūrizuotas" }],
+  periodic_audit: [{ target: "", minimum: "" }, { target: "kasmetis", minimum: "" }, { target: "kasmetis+išorinis", minimum: "kasmetis" }, { target: "nuolatinis+išorinis", minimum: "kasmetis+išorinis" }],
+};
+
+function scaleToMetric(metricId: string, scoreVal: number | undefined): ScaleMapping {
+  const m = SCALE_MAPPINGS[metricId];
+  if (m && scoreVal !== undefined) return m[scoreVal] || { target: String(scoreVal), minimum: "" };
+  return { target: String(scoreVal || ""), minimum: "" };
+}
+
+function buildExportData(data: WizardData) {
+  const evalsScores = data.evals?.scores || {};
+  const docxMetrics: Record<string, ScaleMapping> = {};
+  Object.entries(evalsScores).forEach(([id, val]) => {
+    docxMetrics[id] = scaleToMetric(id, val as number | undefined);
+  });
+  return {
+    meta: {
+      projectName: data._meta?.projectName || "DI Sistema",
+      organization: data._meta?.organization || "",
+      author: data._meta?.author || "",
+      date: new Date().toISOString().split("T")[0],
+      version: "1.0",
+      docType: "Techninė specifikacija / DI sistemos planavimo dokumentas",
+    },
+    problem: { ...data.problem },
+    concept: { ...data.concept },
+    evals: {
+      metrics: docxMetrics,
+      testingMethods: data.evals?.testingMethods || [],
+      testingNotes: data.evals?.testingNotes || "",
+      _scores: evalsScores,
+      _scaleLabels: Object.fromEntries(
+        EVAL_CATEGORIES.flatMap((c) => c.metrics.map((m) => [m.id, evalsScores[m.id] !== undefined ? m.scale[evalsScores[m.id] as number] : null])).filter(([, v]) => v !== null)
+      ),
+    },
+    architecture: { ...data.architecture },
+    risks: {
+      assessments: DEFAULT_RISKS.map((r) => {
+        const a = (data.risks?.assessments || {})[r.id];
+        return { id: r.id, article: r.article, area: r.area, risk: r.risk, reason: r.reason, responsible: r.responsible, measures: r.measures, impact: a?.impact || r.impact, likelihood: a?.likelihood || r.likelihood, status: a?.status || r.status, notes: a?.notes || "" };
+      }),
+    },
+    fieldConsult: data.fieldConsult || {},
+    evalsConsult: data.evals?.needsConsult || {},
+  };
+}
+
 function StepReport({ data }: ReportStepProps) {
   const p = data.problem || {};
   const c = data.concept || {};
@@ -1657,75 +1724,7 @@ function StepReport({ data }: ReportStepProps) {
   const compliancePct = Math.round((compliance.filter((c) => c.met).length / compliance.length) * 100);
 
   const downloadJSON = () => {
-    // Transform wizard evals scores (0-3) into DOCX generator metrics format
-    const scaleToMetric = (metricId: string, scoreVal: number | undefined): ScaleMapping => {
-      // Map known metric IDs to meaningful target/minimum values based on score level
-      const mappings: Record<string, ScaleMapping[]> = {
-        accuracy: [{ target: "", minimum: "" }, { target: "70", minimum: "60" }, { target: "85", minimum: "75" }, { target: "95", minimum: "90" }],
-        robustness: [{ target: "", minimum: "" }, { target: "60", minimum: "50" }, { target: "80", minimum: "70" }, { target: "95", minimum: "85" }],
-        latency: [{ target: "", minimum: "" }, { target: "30000", minimum: "60000" }, { target: "10000", minimum: "30000" }, { target: "2000", minimum: "5000" }],
-        bias: [{ target: "", minimum: "" }, { target: "pradėta", minimum: "" }, { target: "<5%", minimum: "<10%" }, { target: "<2%", minimum: "<5%" }],
-        disparate: [{ target: "", minimum: "" }, { target: "identifikuota", minimum: "" }, { target: "matuojama", minimum: "" }, { target: "kompensuojama", minimum: "" }],
-        explainability: [{ target: "", minimum: "" }, { target: "2", minimum: "1" }, { target: "4", minimum: "3" }, { target: "5", minimum: "4" }],
-        audit_trail: [{ target: "", minimum: "" }, { target: "daliniai", minimum: "" }, { target: "taip", minimum: "taip" }, { target: "taip+analizė", minimum: "taip" }],
-        user_notice: [{ target: "", minimum: "" }, { target: "ToS", minimum: "" }, { target: "taip", minimum: "taip" }, { target: "interaktyvus", minimum: "taip" }],
-        confidence: [{ target: "", minimum: "" }, { target: "vidinis", minimum: "" }, { target: "specialistui", minimum: "" }, { target: "visiems", minimum: "specialistui" }],
-        adversarial: [{ target: "", minimum: "" }, { target: "bazinė", minimum: "" }, { target: "testai", minimum: "bazinė" }, { target: "nuolatinis", minimum: "testai" }],
-        fallback: [{ target: "", minimum: "" }, { target: "klaida", minimum: "" }, { target: "graceful", minimum: "klaida" }, { target: "auto-failover", minimum: "graceful" }],
-        data_quality: [{ target: "", minimum: "" }, { target: "validacija", minimum: "" }, { target: "statistinė", minimum: "validacija" }, { target: "anomalijos", minimum: "statistinė" }],
-        human_override: [{ target: "", minimum: "" }, { target: "techninė", minimum: "" }, { target: "lengva", minimum: "techninė" }, { target: "1-click+audit", minimum: "lengva" }],
-        escalation: [{ target: "", minimum: "" }, { target: "ad-hoc", minimum: "" }, { target: "struktūrizuotas", minimum: "" }, { target: "auto+SLA", minimum: "struktūrizuotas" }],
-        domain_validation: [{ target: "", minimum: "" }, { target: "informuoti", minimum: "" }, { target: "peržiūrėjo", minimum: "" }, { target: "testavo", minimum: "peržiūrėjo" }],
-        uptime: [{ target: "", minimum: "" }, { target: "95", minimum: "90" }, { target: "99.5", minimum: "99" }, { target: "99.9", minimum: "99.5" }],
-        drift: [{ target: "", minimum: "" }, { target: "rankinė", minimum: "" }, { target: "auto", minimum: "" }, { target: "auto+retrain", minimum: "auto" }],
-        incident: [{ target: "", minimum: "" }, { target: "ad-hoc", minimum: "" }, { target: "struktūrizuotas", minimum: "" }, { target: "auto+alertai", minimum: "struktūrizuotas" }],
-        periodic_audit: [{ target: "", minimum: "" }, { target: "kasmetis", minimum: "" }, { target: "kasmetis+išorinis", minimum: "kasmetis" }, { target: "nuolatinis+išorinis", minimum: "kasmetis+išorinis" }],
-      };
-      const m = mappings[metricId];
-      if (m && scoreVal !== undefined) return m[scoreVal] || { target: String(scoreVal), minimum: "" };
-      return { target: String(scoreVal || ""), minimum: "" };
-    };
-
-    // Build DOCX-compatible metrics from scores
-    const evalsScores = data.evals?.scores || {};
-    const docxMetrics: Record<string, ScaleMapping> = {};
-    Object.entries(evalsScores).forEach(([id, val]) => {
-      docxMetrics[id] = scaleToMetric(id, val);
-    });
-
-    // Build the export object matching DOCX generator structure exactly
-    const exportData = {
-      meta: {
-        projectName: data._meta?.projectName || "DI Sistema",
-        organization: data._meta?.organization || "",
-        author: data._meta?.author || "",
-        date: new Date().toISOString().split("T")[0],
-        version: "1.0",
-        docType: "Techninė specifikacija / DI sistemos planavimo dokumentas",
-      },
-      problem: { ...data.problem },
-      concept: { ...data.concept },
-      evals: {
-        metrics: docxMetrics,
-        testingMethods: data.evals?.testingMethods || [],
-        testingNotes: data.evals?.testingNotes || "",
-        // Also include raw scores for reference
-        _scores: evalsScores,
-        _scaleLabels: Object.fromEntries(
-          EVAL_CATEGORIES.flatMap((c) => c.metrics.map((m) => [m.id, evalsScores[m.id] !== undefined ? m.scale[evalsScores[m.id] as number] : null])).filter(([, v]) => v !== null)
-        ),
-      },
-      architecture: { ...data.architecture },
-      risks: {
-        assessments: DEFAULT_RISKS.map((r) => {
-          const a = (data.risks?.assessments || {})[r.id];
-          return { id: r.id, article: r.article, area: r.area, risk: r.risk, reason: r.reason, responsible: r.responsible, measures: r.measures, impact: a?.impact || r.impact, likelihood: a?.likelihood || r.likelihood, status: a?.status || r.status, notes: a?.notes || "" };
-        }),
-      },
-      fieldConsult: data.fieldConsult || {},
-      evalsConsult: data.evals?.needsConsult || {},
-    };
-
+    const exportData = buildExportData(data);
     const blob = new Blob([JSON.stringify(exportData, null, 2)], { type: "application/json" });
     const url = URL.createObjectURL(blob);
     const link = document.createElement("a");
@@ -1736,78 +1735,14 @@ function StepReport({ data }: ReportStepProps) {
   };
 
   const handleDownloadDocx = () => {
-    // Reuse the same export data structure as JSON download
-    const scaleToMetric = (metricId: string, scoreVal: number | undefined): ScaleMapping => {
-      const mappings: Record<string, ScaleMapping[]> = {
-        accuracy: [{ target: "", minimum: "" }, { target: "70", minimum: "60" }, { target: "85", minimum: "75" }, { target: "95", minimum: "90" }],
-        robustness: [{ target: "", minimum: "" }, { target: "60", minimum: "50" }, { target: "80", minimum: "70" }, { target: "95", minimum: "85" }],
-        latency: [{ target: "", minimum: "" }, { target: "30000", minimum: "60000" }, { target: "10000", minimum: "30000" }, { target: "2000", minimum: "5000" }],
-        bias: [{ target: "", minimum: "" }, { target: "pradėta", minimum: "" }, { target: "<5%", minimum: "<10%" }, { target: "<2%", minimum: "<5%" }],
-        disparate: [{ target: "", minimum: "" }, { target: "identifikuota", minimum: "" }, { target: "matuojama", minimum: "" }, { target: "kompensuojama", minimum: "" }],
-        explainability: [{ target: "", minimum: "" }, { target: "2", minimum: "1" }, { target: "4", minimum: "3" }, { target: "5", minimum: "4" }],
-        audit_trail: [{ target: "", minimum: "" }, { target: "daliniai", minimum: "" }, { target: "taip", minimum: "taip" }, { target: "taip+analizė", minimum: "taip" }],
-        user_notice: [{ target: "", minimum: "" }, { target: "ToS", minimum: "" }, { target: "taip", minimum: "taip" }, { target: "interaktyvus", minimum: "taip" }],
-        confidence: [{ target: "", minimum: "" }, { target: "vidinis", minimum: "" }, { target: "specialistui", minimum: "" }, { target: "visiems", minimum: "specialistui" }],
-        adversarial: [{ target: "", minimum: "" }, { target: "bazinė", minimum: "" }, { target: "testai", minimum: "bazinė" }, { target: "nuolatinis", minimum: "testai" }],
-        fallback: [{ target: "", minimum: "" }, { target: "klaida", minimum: "" }, { target: "graceful", minimum: "klaida" }, { target: "auto-failover", minimum: "graceful" }],
-        data_quality: [{ target: "", minimum: "" }, { target: "validacija", minimum: "" }, { target: "statistinė", minimum: "validacija" }, { target: "anomalijos", minimum: "statistinė" }],
-        human_override: [{ target: "", minimum: "" }, { target: "techninė", minimum: "" }, { target: "lengva", minimum: "techninė" }, { target: "1-click+audit", minimum: "lengva" }],
-        escalation: [{ target: "", minimum: "" }, { target: "ad-hoc", minimum: "" }, { target: "struktūrizuotas", minimum: "" }, { target: "auto+SLA", minimum: "struktūrizuotas" }],
-        domain_validation: [{ target: "", minimum: "" }, { target: "informuoti", minimum: "" }, { target: "peržiūrėjo", minimum: "" }, { target: "testavo", minimum: "peržiūrėjo" }],
-        uptime: [{ target: "", minimum: "" }, { target: "95", minimum: "90" }, { target: "99.5", minimum: "99" }, { target: "99.9", minimum: "99.5" }],
-        drift: [{ target: "", minimum: "" }, { target: "rankinė", minimum: "" }, { target: "auto", minimum: "" }, { target: "auto+retrain", minimum: "auto" }],
-        incident: [{ target: "", minimum: "" }, { target: "ad-hoc", minimum: "" }, { target: "struktūrizuotas", minimum: "" }, { target: "auto+alertai", minimum: "struktūrizuotas" }],
-        periodic_audit: [{ target: "", minimum: "" }, { target: "kasmetis", minimum: "" }, { target: "kasmetis+išorinis", minimum: "kasmetis" }, { target: "nuolatinis+išorinis", minimum: "kasmetis+išorinis" }],
-      };
-      const m = mappings[metricId];
-      if (m && scoreVal !== undefined) return m[scoreVal] || { target: String(scoreVal), minimum: "" };
-      return { target: String(scoreVal || ""), minimum: "" };
-    };
-
-    const evalsScores = data.evals?.scores || {};
-    const docxMetrics: Record<string, ScaleMapping> = {};
-    Object.entries(evalsScores).forEach(([id, val]) => {
-      docxMetrics[id] = scaleToMetric(id, val as number | undefined);
-    });
-
-    const exportData = {
-      meta: {
-        projectName: data._meta?.projectName || "DI Sistema",
-        organization: data._meta?.organization || "",
-        author: data._meta?.author || "",
-        date: new Date().toISOString().split("T")[0],
-        version: "1.0",
-        docType: "Techninė specifikacija / DI sistemos planavimo dokumentas",
-      },
-      problem: { ...data.problem },
-      concept: { ...data.concept },
-      evals: {
-        metrics: docxMetrics,
-        testingMethods: data.evals?.testingMethods || [],
-        testingNotes: data.evals?.testingNotes || "",
-        _scaleLabels: Object.fromEntries(
-          EVAL_CATEGORIES.flatMap((c) => c.metrics.map((m) => [m.id, evalsScores[m.id] !== undefined ? m.scale[evalsScores[m.id] as number] : null])).filter(([, v]) => v !== null)
-        ),
-      },
-      architecture: { ...data.architecture },
-      risks: {
-        assessments: DEFAULT_RISKS.map((r) => {
-          const a = (data.risks?.assessments || {})[r.id];
-          return { id: r.id, article: r.article, area: r.area, risk: r.risk, reason: r.reason, responsible: r.responsible, measures: r.measures, impact: a?.impact || r.impact, likelihood: a?.likelihood || r.likelihood, status: a?.status || r.status, notes: a?.notes || "" };
-        }),
-      },
-      fieldConsult: data.fieldConsult || {},
-      evalsConsult: data.evals?.needsConsult || {},
-    };
-
-    downloadDocx(exportData);
+    downloadDocx(buildExportData(data));
   };
 
   return (
     <div>
       {/* Header bar */}
       <Card style={{ background: "linear-gradient(135deg, #1e293b, #0f172a)", border: "1px solid #1e40af" }}>
-        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", flexWrap: "wrap", gap: 16 }}>
+        <div className="wiz-report-header" style={{ display: "flex", justifyContent: "space-between", alignItems: "center", flexWrap: "wrap", gap: 16 }}>
           <div>
             <div style={{ fontSize: 12, color: "#64748b", textTransform: "uppercase", letterSpacing: 1.5 }}>
               {data._meta?.organization ? `${data._meta.organization} -- ` : ""}Techninė specifikacija
@@ -1835,7 +1770,7 @@ function StepReport({ data }: ReportStepProps) {
         </div>
 
         {/* Compliance score */}
-        <div style={{ display: "flex", gap: 20, marginTop: 20, flexWrap: "wrap" }}>
+        <div className="wiz-report-stats" style={{ display: "flex", gap: 20, marginTop: 20, flexWrap: "wrap" }}>
           <div style={{ background: "#0f172a", borderRadius: 10, padding: "16px 24px", textAlign: "center", minWidth: 120 }}>
             <div style={{ fontSize: 36, fontWeight: 800, color: compliancePct >= 70 ? "#059669" : compliancePct >= 40 ? "#d97706" : "#dc2626" }}>{compliancePct}%</div>
             <div style={{ fontSize: 11, color: "#64748b" }}>DI Akto atitiktis</div>
@@ -1871,8 +1806,8 @@ function StepReport({ data }: ReportStepProps) {
           <RField label="Problema" value={p.description} fieldKey="problem.description" />
           <RField label="Dabartinis procesas" value={p.currentProcess} fieldKey="problem.currentProcess" />
           {(p.timeSpent || p.errorRate || p.volume) && (
-            <RTable headers={["Rodiklis", "Reiksme"]} rows={[
-              ...(p.timeSpent ? [["Laiko sanaudos", `${p.timeSpent} val./diena`]] : []),
+            <RTable headers={["Rodiklis", "Reikšmė"]} rows={[
+              ...(p.timeSpent ? [["Laiko sąnaudos", `${p.timeSpent} val./diena`]] : []),
               ...(p.errorRate ? [["Klaidų dažnis", `${p.errorRate}%`]] : []),
               ...(p.volume ? [["Apimtis", `${p.volume} vnt./diena`]] : []),
             ]} />
@@ -1899,9 +1834,9 @@ function StepReport({ data }: ReportStepProps) {
           <RField label="Vizija" value={c.vision} fieldKey="concept.vision" />
           {(c.inputSystems || c.outputSystems) && (
             <RTable headers={["Kategorija", "Sistemos"]} rows={[
-              ...(c.inputSystems ? [["Ivestis", c.inputSystems]] : []),
+              ...(c.inputSystems ? [["Įvestis", c.inputSystems]] : []),
               ...(c.outputSystems ? [["Išvestis", c.outputSystems]] : []),
-              ...(c.dataSources ? [["Duomenu šaltiniai", c.dataSources]] : []),
+              ...(c.dataSources ? [["Duomenų šaltiniai", c.dataSources]] : []),
               ...(c.orchestration ? [["Orkestracija", c.orchestration]] : []),
             ]} />
           )}
@@ -1910,7 +1845,7 @@ function StepReport({ data }: ReportStepProps) {
           <RField label="Override mechanizmas" value={c.overrideMechanism} fieldKey="concept.overrideMechanism" />
           {(c.gdprChecks?.length ?? 0) > 0 && <RField label="BDAR checklist" value={(c.gdprChecks?.length ?? 0) + "/4 reikalavimai atitikti"} />}
           {(c.phase1 || c.phase2 || c.phase3) && (
-            <RTable headers={["Faze", "Aprasymas"]} rows={[
+            <RTable headers={["Fazė", "Aprašymas"]} rows={[
               ...(c.phase1 ? [["1: PoC/Sandbox", c.phase1]] : []),
               ...(c.phase2 ? [["2: Pilotas", c.phase2]] : []),
               ...(c.phase3 ? [["3: Produkcija", c.phase3]] : []),
@@ -1930,7 +1865,7 @@ function StepReport({ data }: ReportStepProps) {
               }))
             } />
           ) : (
-            <div style={{ color: "#64748b", fontSize: 13, fontStyle: "italic" }}>Metrikos neivertintos - grizkite i 3 zingsni</div>
+            <div style={{ color: "#64748b", fontSize: 13, fontStyle: "italic" }}>Metrikos neįvertintos — grįžkite į 3 žingsnį</div>
           )}
           {(() => {
             const crits = EVAL_CATEGORIES.flatMap((cat) => cat.metrics.filter((m) => m.critical && (e.scores || {})[m.id] !== undefined && (e.scores || {})[m.id] <= 1));
@@ -1964,7 +1899,7 @@ function StepReport({ data }: ReportStepProps) {
       {/* 5. ATITIKTIS */}
       <Card style={{ border: "1px solid #1e40af33" }}>
         <ReportSection num="5" title="ES DI Akto atitikties santrauka">
-          <RTable headers={["Reikalavimas", "Aprasymas", "Statusas"]} rows={compliance.map((c) => [
+          <RTable headers={["Reikalavimas", "Aprašymas", "Statusas"]} rows={compliance.map((c) => [
             c.art, c.title, c.met ? <span style={{ display: "inline-flex", alignItems: "center", gap: 4, color: "#6ee7b7" }}><CheckCircle size={14} /> Apibrėžta</span> : <span style={{ display: "inline-flex", alignItems: "center", gap: 4, color: "#fcd34d" }}><AlertTriangle size={14} /> Reikia</span>,
           ])} />
         </ReportSection>
@@ -2103,7 +2038,7 @@ export default function DIPlanningWizard() {
     <div style={{ fontFamily: "'Source Sans 3', 'Segoe UI', system-ui, sans-serif", background: "#0f172a", color: "#e2e8f0" }}>
       {/* Header + Step indicator (sticky) */}
       <div style={{ position: "sticky", top: 0, zIndex: 50 }}>
-      <div style={{ background: "linear-gradient(135deg, #0f172a 0%, #1e293b 100%)", borderBottom: "1px solid #334155", padding: "12px 28px" }}>
+      <div className="wiz-header" style={{ background: "linear-gradient(135deg, #0f172a 0%, #1e293b 100%)", borderBottom: "1px solid #334155", padding: "12px 28px" }}>
         <div style={{ display: "flex", alignItems: "center", gap: 12, marginBottom: 2 }}>
           <Link href="/" style={{ fontSize: 13, color: "#93c5fd", textDecoration: "none", padding: "2px 10px", borderRadius: 4, border: "1px solid #334155", fontWeight: 500, display: "inline-flex", alignItems: "center", gap: 4 }}>
             <ArrowLeft size={12} /> Grįžti
@@ -2111,11 +2046,11 @@ export default function DIPlanningWizard() {
           <span style={{ fontSize: 13, background: "#1e40af", color: "#93c5fd", padding: "2px 10px", borderRadius: 4, fontWeight: 600, letterSpacing: 1.2, textTransform: "uppercase" }}>Framework</span>
           <span style={{ fontSize: 13, background: "#065f46", color: "#6ee7b7", padding: "2px 10px", borderRadius: 4, fontWeight: 600, letterSpacing: 1.2, textTransform: "uppercase" }}>EU AI Act</span>
         </div>
-        <div style={{ display: "flex", alignItems: "center", gap: 16, flexWrap: "wrap" }}>
+        <div className="wiz-header-row" style={{ display: "flex", alignItems: "center", gap: 16, flexWrap: "wrap" }}>
           <h1 style={{ fontSize: 20, fontWeight: 700, margin: "4px 0", color: "#f1f5f9", letterSpacing: -0.5, display: "flex", alignItems: "center", gap: 8, whiteSpace: "nowrap" }}>
             <Scale size={20} /> DI Sistemos Planavimo Vedlys
           </h1>
-          <div style={{ display: "flex", gap: 10, flexWrap: "wrap" }}>
+          <div className="wiz-header-inputs" style={{ display: "flex", gap: 10, flexWrap: "wrap" }}>
           <input value={data._meta?.projectName || ""} onChange={(ev: ChangeEvent<HTMLInputElement>) => setData((d) => ({ ...d, _meta: { ...d._meta, projectName: ev.target.value } }))}
             placeholder="Projekto pavadinimas (pvz., @avilys)" style={{ background: "#1e293b", border: "1px solid #475569", color: "#e2e8f0", padding: "6px 12px", borderRadius: 6, fontSize: 13, width: 240 }} />
           <input value={data._meta?.organization || ""} onChange={(ev: ChangeEvent<HTMLInputElement>) => setData((d) => ({ ...d, _meta: { ...d._meta, organization: ev.target.value } }))}
@@ -2127,7 +2062,7 @@ export default function DIPlanningWizard() {
       </div>
 
       {/* Horizontal step indicator */}
-      <div style={{ display: "flex", alignItems: "center", padding: "12px 24px", background: "#1e293b", borderBottom: "1px solid #334155", gap: 0 }}>
+      <div className="wiz-steps-bar" style={{ display: "flex", alignItems: "center", padding: "12px 24px", background: "#1e293b", borderBottom: "1px solid #334155", gap: 0 }}>
         {STEPS.map((step, i) => {
           const completeness = getStepCompleteness(step.id);
           const isActive = activeStep === i;
@@ -2174,7 +2109,7 @@ export default function DIPlanningWizard() {
 
       <div style={{ display: "flex" }}>
         {/* Side navigation */}
-        <div style={{ width: 220, minWidth: 220, background: "#1e293b", borderRight: "1px solid #334155", padding: "16px 0" }}>
+        <div className="wiz-sidebar" style={{ width: 220, minWidth: 220, background: "#1e293b", borderRight: "1px solid #334155", padding: "16px 0" }}>
           {STEPS.map((step, i) => {
             const completeness = getStepCompleteness(step.id);
             const isActive = activeStep === i;
@@ -2238,7 +2173,7 @@ export default function DIPlanningWizard() {
         </div>
 
         {/* Main content */}
-        <div style={{ flex: 1, padding: "24px 32px" }}>
+        <div className="wiz-content" style={{ flex: 1, padding: "24px 32px" }}>
           <div style={{ maxWidth: 1400, margin: "0 auto" }}>
             {activeStep === STEPS.length - 1 ? (
               <StepReport data={data} />
@@ -2276,7 +2211,7 @@ export default function DIPlanningWizard() {
                       </span>
                     </div>
                   )}
-                  <div style={{ display: "flex", justifyContent: "space-between" }}>
+                  <div className="wiz-nav-btns" style={{ display: "flex", justifyContent: "space-between" }}>
                     <button
                       onClick={() => setActiveStep(Math.max(0, activeStep - 1))}
                       disabled={activeStep === 0}

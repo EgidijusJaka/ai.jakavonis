@@ -36,3 +36,29 @@ html[data-scroll="smooth"] {
 .wizard-scroll::-webkit-scrollbar-thumb:hover {
   background: #475569;
 }
+
+/* Responsive wizard utilities */
+@media (max-width: 768px) {
+  .wiz-sidebar { display: none !important; }
+  .wiz-grid-2 { grid-template-columns: 1fr !important; }
+  .wiz-grid-3 { grid-template-columns: 1fr !important; }
+  .wiz-grid-4 { grid-template-columns: 1fr 1fr !important; }
+  .wiz-content { padding: 16px 12px !important; }
+  .wiz-header { padding: 10px 14px !important; }
+  .wiz-header-row { flex-direction: column !important; align-items: flex-start !important; }
+  .wiz-header-inputs { flex-direction: column !important; width: 100% !important; }
+  .wiz-header-inputs input { width: 100% !important; }
+  .wiz-steps-bar { overflow-x: auto !important; -webkit-overflow-scrolling: touch; padding: 8px 12px !important; }
+  .wiz-steps-bar::-webkit-scrollbar { display: none; }
+  .wiz-report-stats { flex-wrap: wrap !important; gap: 10px !important; }
+  .wiz-report-stats > div { min-width: 0 !important; flex: 1 1 calc(50% - 10px) !important; }
+  .wiz-scale-btns { flex-direction: column !important; }
+  .wiz-scale-btns button { min-width: 0 !important; }
+  .wiz-nav-btns { flex-direction: column !important; gap: 8px !important; }
+  .wiz-nav-btns button { width: 100% !important; justify-content: center !important; }
+  .wiz-alternatives { flex-wrap: wrap !important; }
+  .wiz-modal-grid { grid-template-columns: 1fr !important; }
+  .wiz-report-header { flex-direction: column !important; align-items: flex-start !important; }
+  .wiz-report-header > div:last-child { width: 100% !important; }
+  .wiz-report-header button { flex: 1 !important; }
+}
