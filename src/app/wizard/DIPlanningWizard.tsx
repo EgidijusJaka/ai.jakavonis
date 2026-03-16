@@ -276,7 +276,8 @@ const FIELD_EXPERTISE: Record<string, FieldExpertise> = {
   "concept.phase2": { type: "di", hint: "DI konsultantas padės suplanuoti pilotą", docxHint: "[UŽPILDYTI — DI konsultantas] Suplanuoti piloto fazę" },
   "concept.phase3": { type: "di", hint: "DI konsultantas padės suplanuoti produkcinį diegimą", docxHint: "[UŽPILDYTI — DI konsultantas] Suplanuoti produkcijos fazę" },
 
-  // Step 3: Evals — uses its own needsConsult mechanism, not FIELD_EXPERTISE
+  // Step 3: Evals
+  "evals.testingMethods": { type: "di", hint: "DI konsultantas padės parinkti testavimo strategiją", docxHint: "[UŽPILDYTI — DI konsultantas] Pasirinkti testavimo metodus" },
 
   // Step 4: Architektūra — mostly DI expert
   "architecture.selectedComponents": { type: "di", hint: "DI konsultantas padės pasirinkti sistemos komponentus", docxHint: "[UŽPILDYTI — DI konsultantas] Pasirinkti architektūros komponentus" },
@@ -304,18 +305,24 @@ function FieldHint({ fieldKey, isEmpty, isConsulted, onConsult, onCancelConsult 
   const expertise = FIELD_EXPERTISE[fieldKey];
   if (!expertise) return null;
 
-  // Field is consulted and still empty — show consultation badge with cancel option
+  // Field is consulted and still empty — show handled indicator + consultation badge
   if (isConsulted && isEmpty) {
     const style = EXPERTISE_LABELS[expertise.type === "self" ? "di" : expertise.type];
     return (
-      <div style={{ marginTop: 6, padding: "8px 12px", borderRadius: 8, background: `${style.color}10`, border: `1px solid ${style.color}30`, display: "flex", alignItems: "center", gap: 8 }}>
-        <span style={{ fontSize: 11, fontWeight: 600, color: style.color, padding: "2px 8px", borderRadius: 10, background: `${style.color}20`, whiteSpace: "nowrap" }}>
-          {style.label}
-        </span>
-        <span style={{ fontSize: 11, color: "#94a3b8" }}>Pažymėta konsultacijai — {expertise.hint.charAt(0).toLowerCase() + expertise.hint.slice(1)}</span>
-        {onCancelConsult && (
-          <button onClick={() => onCancelConsult(fieldKey)} style={{ marginLeft: "auto", background: "none", border: "none", color: "#64748b", cursor: "pointer", fontSize: 11, padding: "2px 6px" }}>Atšaukti</button>
-        )}
+      <div style={{ marginTop: 6 }}>
+        <div style={{ display: "inline-flex", alignItems: "center", gap: 4, marginBottom: 4, fontSize: 11 }}>
+          <Check size={11} style={{ color: "#3b82f6" }} />
+          <span style={{ color: "#3b82f6", fontWeight: 500 }}>Pažymėta konsultacijai</span>
+        </div>
+        <div style={{ padding: "8px 12px", borderRadius: 8, background: `${style.color}10`, border: `1px solid ${style.color}30`, display: "flex", alignItems: "center", gap: 8 }}>
+          <span style={{ fontSize: 11, fontWeight: 600, color: style.color, padding: "2px 8px", borderRadius: 10, background: `${style.color}20`, whiteSpace: "nowrap" }}>
+            {style.label}
+          </span>
+          <span style={{ fontSize: 11, color: "#94a3b8" }}>{expertise.hint.charAt(0).toLowerCase() + expertise.hint.slice(1)}</span>
+          {onCancelConsult && (
+            <button onClick={() => onCancelConsult(fieldKey)} style={{ marginLeft: "auto", background: "none", border: "none", color: "#64748b", cursor: "pointer", fontSize: 11, padding: "2px 6px" }}>Atšaukti</button>
+          )}
+        </div>
       </div>
     );
   }
@@ -791,16 +798,13 @@ function StepConcept({ data, setData }: StepProps) {
             { key: "outputSystems", label: "Išvesties sistemos", placeholder: "Pvz.: DVS, Pranešimų sistema" },
             { key: "dataSources", label: "Duomenų šaltiniai", placeholder: "Pvz.: Istoriniai dokumentai, Org. struktūra" },
             { key: "orchestration", label: "Orkestracija", placeholder: "Pvz.: n8n, Apache Airflow, Custom" },
-          ].map((f) => {
-            const isSelf = FIELD_EXPERTISE[`concept.${f.key}`]?.type === "self";
-            return (
+          ].map((f) => (
               <div key={f.key}>
                 <label style={{ fontSize: 12, color: "#64748b", display: "block", marginBottom: 4 }}>{f.label}</label>
                 <TextArea value={(c[f.key] as string) || ""} onChange={(v: string) => update(f.key, v)} placeholder={f.placeholder} rows={2} />
-                <FieldHint fieldKey={`concept.${f.key}`} isEmpty={!((c[f.key] as string) || "").trim()} {...(isSelf ? {} : { isConsulted: fc[`concept.${f.key}`], onConsult: markConsult, onCancelConsult: cancelConsult })} />
+                <FieldHint fieldKey={`concept.${f.key}`} isEmpty={!((c[f.key] as string) || "").trim()} isConsulted={fc[`concept.${f.key}`]} onConsult={markConsult} onCancelConsult={cancelConsult} />
               </div>
-            );
-          })}
+          ))}
         </div>
       </Card>
 
@@ -888,8 +892,7 @@ function StepConcept({ data, setData }: StepProps) {
             <FieldHint fieldKey="concept.dataMinimization" isEmpty={!c.dataMinimization?.trim()} isConsulted={fc["concept.dataMinimization"]} onConsult={markConsult} onCancelConsult={cancelConsult} />
           </div>
         </div>
-        <FieldHint fieldKey="concept.gdprChecks" isEmpty={!(c.gdprChecks?.length)} isConsulted={fc["concept.gdprChecks"]} onConsult={markConsult} onCancelConsult={cancelConsult} />
-        <div style={{ display: "flex", gap: 8, marginTop: 8, flexWrap: "wrap" }}>
+        <div style={{ display: "flex", gap: 8, marginTop: 12, flexWrap: "wrap" }}>
           {[
             { id: "dpia", label: "DPIA atliktas" },
             { id: "legal_basis", label: "Teisinis pagrindas apibrėžtas" },
@@ -914,6 +917,7 @@ function StepConcept({ data, setData }: StepProps) {
             );
           })}
         </div>
+        <FieldHint fieldKey="concept.gdprChecks" isEmpty={!(c.gdprChecks?.length)} isConsulted={fc["concept.gdprChecks"]} onConsult={markConsult} onCancelConsult={cancelConsult} />
       </Card>
 
       <Card>
@@ -1084,18 +1088,26 @@ function StepEvals({ data, setData }: StepProps) {
                     </div>
                     {/* Consultation option */}
                     {needsConsult[metric.id] ? (
-                      <div style={{ marginTop: 8, padding: "8px 12px", borderRadius: 8, background: "#1e40af15", border: "1px solid #93c5fd30", display: "flex", alignItems: "center", gap: 8 }}>
-                        <span style={{ fontSize: 11, fontWeight: 600, color: "#93c5fd", padding: "2px 8px", borderRadius: 10, background: "#1e40af25", whiteSpace: "nowrap" }}>DI konsultantas</span>
-                        <span style={{ fontSize: 11, color: "#94a3b8" }}>Ši metrika bus pažymėta konsultacijai su DI ekspertu</span>
-                        <button onClick={() => {
-                          const c2 = { ...(e.needsConsult || {}) }; delete c2[metric.id];
-                          setData((d) => ({ ...d, evals: { ...d.evals, needsConsult: c2 } }));
-                        }} style={{ marginLeft: "auto", background: "none", border: "none", color: "#64748b", cursor: "pointer", fontSize: 11, padding: "2px 6px" }}>Atšaukti</button>
+                      <div style={{ marginTop: 8 }}>
+                        <div style={{ display: "inline-flex", alignItems: "center", gap: 4, marginBottom: 4, fontSize: 11 }}>
+                          <Check size={11} style={{ color: "#3b82f6" }} />
+                          <span style={{ color: "#3b82f6", fontWeight: 500 }}>Pažymėta konsultacijai</span>
+                        </div>
+                        <div style={{ padding: "8px 12px", borderRadius: 8, background: "#93c5fd10", border: "1px solid #93c5fd30", display: "flex", alignItems: "center", gap: 8 }}>
+                          <span style={{ fontSize: 11, fontWeight: 600, color: "#93c5fd", padding: "2px 8px", borderRadius: 10, background: "#93c5fd20", whiteSpace: "nowrap" }}>DI konsultantas</span>
+                          <span style={{ fontSize: 11, color: "#94a3b8" }}>Ši metrika bus įvertinta su DI ekspertu</span>
+                          <button onClick={() => {
+                            const c2 = { ...(e.needsConsult || {}) }; delete c2[metric.id];
+                            setData((d) => ({ ...d, evals: { ...d.evals, needsConsult: c2 } }));
+                          }} style={{ marginLeft: "auto", background: "none", border: "none", color: "#64748b", cursor: "pointer", fontSize: 11, padding: "2px 6px" }}>Atšaukti</button>
+                        </div>
                       </div>
                     ) : val === undefined ? (
                       <button onClick={() => handleConsult(metric.id)}
-                        style={{ marginTop: 8, background: "none", border: "1px solid #334155", borderRadius: 6, color: "#64748b", cursor: "pointer", fontSize: 11, padding: "4px 12px", display: "flex", alignItems: "center", gap: 4 }}>
-                        <Search size={11} /> Pažymėti konsultacijai
+                        style={{ marginTop: 8, background: "#1e293b", border: "1px solid #059669", borderRadius: 8, color: "#e2e8f0", cursor: "pointer", fontSize: 12, fontWeight: 600, padding: "6px 14px", display: "inline-flex", alignItems: "center", gap: 5, transition: "all 0.15s", boxShadow: "0 1px 3px rgba(0,0,0,0.3)" }}
+                        onMouseEnter={(ev) => { ev.currentTarget.style.background = "#059669"; ev.currentTarget.style.borderColor = "#34d399"; ev.currentTarget.style.transform = "translateY(-1px)"; ev.currentTarget.style.color = "#ffffff"; }}
+                        onMouseLeave={(ev) => { ev.currentTarget.style.background = "#1e293b"; ev.currentTarget.style.borderColor = "#059669"; ev.currentTarget.style.transform = "none"; ev.currentTarget.style.color = "#e2e8f0"; }}>
+                        <AlertCircle size={13} /> Pažymėti konsultacijai
                       </button>
                     ) : null}
 
@@ -1146,6 +1158,7 @@ function StepEvals({ data, setData }: StepProps) {
           })}
         </div>
         <TextArea value={e.testingNotes || ""} onChange={(v: string) => update("testingNotes", v)} placeholder="Papildomi testavimo reikalavimai ar pastabos..." rows={2} />
+        <FieldHint fieldKey="evals.testingMethods" isEmpty={!(e.testingMethods?.length)} isConsulted={(data.fieldConsult || {})["evals.testingMethods"]} onConsult={(key: string) => setData((d) => ({ ...d, fieldConsult: { ...(d.fieldConsult || {}), [key]: true } }))} onCancelConsult={(key: string) => setData((d) => { const c = { ...(d.fieldConsult || {}) }; delete c[key]; return { ...d, fieldConsult: c }; })} />
       </Card>
     </div>
   );
@@ -1537,7 +1550,13 @@ function StepRisks({ data, setData }: StepProps) {
                 </div>
                 <div>
                   <label style={{ fontSize: 10, color: "#64748b", letterSpacing: 2, textTransform: "uppercase", display: "block", marginBottom: 6 }}>Statusas</label>
-                  <select value={selData.status} onChange={(e) => updateAssessment(selected.id, "status", e.target.value)}
+                  <select value={selData.status} onChange={(e) => {
+                      const newStatus = e.target.value;
+                      updateAssessment(selected.id, "status", newStatus);
+                      if (selData.status === "open" && newStatus !== "open") {
+                        setSelectedRisk(null);
+                      }
+                    }}
                     style={{ width: "100%", background: "#0f172a", border: "1px solid #334155", borderRadius: 6, color: RISK_STATUS_LABELS[selData.status].color, padding: "8px 10px", fontSize: 13, fontWeight: 600, cursor: "pointer" }}>
                     {(Object.entries(RISK_STATUS_LABELS) as [RiskStatus, { label: string; color: string }][]).map(([k, v]) => (
                       <option key={k} value={k}>{v.label}</option>
