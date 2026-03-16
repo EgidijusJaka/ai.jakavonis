@@ -161,6 +161,7 @@ interface WizardData {
 interface StepProps {
   data: WizardData;
   setData: React.Dispatch<React.SetStateAction<WizardData>>;
+  showValidation?: boolean;
 }
 
 interface ReportStepProps {
@@ -184,6 +185,7 @@ interface TextAreaProps {
   onChange: (value: string) => void;
   placeholder?: string;
   rows?: number;
+  className?: string;
 }
 
 interface InputProps {
@@ -191,6 +193,7 @@ interface InputProps {
   onChange: (value: string) => void;
   placeholder?: string;
   style?: CSSProperties;
+  className?: string;
 }
 
 interface ChipOption {
@@ -295,15 +298,55 @@ const EXPERTISE_LABELS: Record<ExpertiseType, { label: string; color: string; bg
   "di+legal": { label: "DI kons. + Teisininkas", color: "#fbbf24", bg: "#a16207aa" },
 };
 
-function FieldHint({ fieldKey, isEmpty, isConsulted, onConsult, onCancelConsult }: {
+// Short Lithuanian labels for sidebar field checklist
+const FIELD_LABELS: Record<string, string> = {
+  "problem.description": "Problemos aprašymas",
+  "problem.currentProcess": "Dabartinis procesas",
+  "problem.painPoints": "Pagrindinės problemos",
+  "problem.timeSpent": "Laiko sąnaudos",
+  "problem.errorRate": "Klaidų dažnis",
+  "problem.volume": "Apimtys",
+  "problem.riskLevel": "Rizikos lygis",
+  "problem.whyAI": "Kodėl DI?",
+  "problem.stakeholders": "Suinteresuotieji",
+  "problem.successCriteria": "Sėkmės kriterijai",
+  "concept.vision": "Sistemos vizija",
+  "concept.inputSystems": "Įvesties sistemos",
+  "concept.outputSystems": "Išvesties sistemos",
+  "concept.dataSources": "Duomenų šaltiniai",
+  "concept.orchestration": "Orkestracija",
+  "concept.modelStrategy": "Modelio strategija",
+  "concept.modelRationale": "Modelio pagrindimas",
+  "concept.oversightLevel": "Priežiūros lygis",
+  "concept.overrideMechanism": "Override mechanizmas",
+  "concept.personalData": "Asmens duomenys",
+  "concept.dataMinimization": "Duomenų minimizavimas",
+  "concept.gdprChecks": "BDAR patikra",
+  "concept.phase1": "PoC fazė",
+  "concept.phase2": "Piloto fazė",
+  "concept.phase3": "Produkcijos fazė",
+  "evals.testingMethods": "Testavimo metodai",
+  "architecture.selectedComponents": "Komponentai",
+  "architecture.dataFlow": "Duomenų srautas",
+  "architecture.infrastructure": "Infrastruktūra",
+  "architecture.securityReqs": "Saugumas",
+  "architecture.scaleReqs": "Mastelis",
+  "architecture.risks": "Rizikos ir mitigacija",
+};
+
+function FieldHint({ fieldKey, isEmpty, isConsulted, onConsult, onCancelConsult, showValidation }: {
   fieldKey: string;
   isEmpty: boolean;
   isConsulted?: boolean;
   onConsult?: (fieldKey: string) => void;
   onCancelConsult?: (fieldKey: string) => void;
+  showValidation?: boolean;
 }) {
   const expertise = FIELD_EXPERTISE[fieldKey];
   if (!expertise) return null;
+
+  // Validation: show red indicator when field is empty and not consulted
+  const showInvalid = showValidation && isEmpty && !isConsulted;
 
   // Field is consulted and still empty — show handled indicator + consultation badge
   if (isConsulted && isEmpty) {
@@ -341,16 +384,27 @@ function FieldHint({ fieldKey, isEmpty, isConsulted, onConsult, onCancelConsult 
   const style = EXPERTISE_LABELS[expertise.type];
   return (
     <div style={{ marginTop: 6 }}>
-      <div style={{ display: "flex", alignItems: "flex-start", gap: 6, padding: "6px 10px", borderRadius: 6, background: style.bg, border: `1px solid ${style.color}30` }}>
+      {showInvalid && (
+        <div style={{ display: "inline-flex", alignItems: "center", gap: 4, marginBottom: 4, fontSize: 11 }}>
+          <AlertCircle size={11} style={{ color: "#fca5a5" }} />
+          <span style={{ color: "#fca5a5", fontWeight: 500 }}>Privalomas laukas</span>
+        </div>
+      )}
+      <div style={{ display: "flex", alignItems: "flex-start", gap: 6, padding: "6px 10px", borderRadius: 6, background: showInvalid ? "#dc262610" : style.bg, border: `1px solid ${showInvalid ? "#dc262640" : `${style.color}30`}` }}>
         <span style={{ fontSize: 11, color: "#94a3b8", lineHeight: 1.4 }}>{expertise.hint}</span>
       </div>
       {onConsult && (
-        <button onClick={() => onConsult(fieldKey)}
-          style={{ marginTop: 6, background: "#1e293b", border: "1px solid #059669", borderRadius: 8, color: "#e2e8f0", cursor: "pointer", fontSize: 12, fontWeight: 600, padding: "6px 14px", display: "inline-flex", alignItems: "center", gap: 5, transition: "all 0.15s", boxShadow: "0 1px 3px rgba(0,0,0,0.3)" }}
-          onMouseEnter={(ev) => { ev.currentTarget.style.background = "#059669"; ev.currentTarget.style.borderColor = "#34d399"; ev.currentTarget.style.transform = "translateY(-1px)"; ev.currentTarget.style.color = "#ffffff"; }}
-          onMouseLeave={(ev) => { ev.currentTarget.style.background = "#1e293b"; ev.currentTarget.style.borderColor = "#059669"; ev.currentTarget.style.transform = "none"; ev.currentTarget.style.color = "#e2e8f0"; }}>
-          <AlertCircle size={13} /> Pažymėti konsultacijai
-        </button>
+        <div className="wiz-tooltip-wrap" style={{ position: "relative", display: "inline-block", marginTop: 6 }}>
+          <button onClick={() => onConsult(fieldKey)}
+            style={{ background: "#1e293b", border: "1px solid #059669", borderRadius: 8, color: "#e2e8f0", cursor: "pointer", fontSize: 12, fontWeight: 600, padding: "6px 14px", display: "inline-flex", alignItems: "center", gap: 5, transition: "all 0.15s", boxShadow: "0 1px 3px rgba(0,0,0,0.3)" }}
+            onMouseEnter={(ev) => { ev.currentTarget.style.background = "#059669"; ev.currentTarget.style.borderColor = "#34d399"; ev.currentTarget.style.transform = "translateY(-1px)"; ev.currentTarget.style.color = "#ffffff"; }}
+            onMouseLeave={(ev) => { ev.currentTarget.style.background = "#1e293b"; ev.currentTarget.style.borderColor = "#059669"; ev.currentTarget.style.transform = "none"; ev.currentTarget.style.color = "#e2e8f0"; }}>
+            <AlertCircle size={13} /> Pažymėti konsultacijai
+          </button>
+          <div className="wiz-tooltip" style={{ display: "none", position: "absolute", bottom: "100%", left: 0, marginBottom: 6, background: "#0f172a", border: "1px solid #334155", borderRadius: 8, padding: "8px 12px", fontSize: 11, color: "#94a3b8", width: 280, zIndex: 10, lineHeight: 1.5, boxShadow: "0 4px 12px rgba(0,0,0,0.5)" }}>
+            Laukas bus pažymėtas techninėje specifikacijoje kaip reikalaujantis eksperto konsultacijos. DOCX dokumente bus sugeneruotas konsultacijų poreikių sąrašas.
+          </div>
+        </div>
       )}
     </div>
   );
@@ -501,12 +555,13 @@ const SectionTitle = ({ icon, title, subtitle }: SectionTitleProps) => (
   </div>
 );
 
-const TextArea = ({ value, onChange, placeholder, rows = 3 }: TextAreaProps) => (
+const TextArea = ({ value, onChange, placeholder, rows = 3, className }: TextAreaProps) => (
   <textarea
     value={value}
     onChange={(e: ChangeEvent<HTMLTextAreaElement>) => onChange(e.target.value)}
     placeholder={placeholder}
     rows={rows}
+    className={`wiz-textarea ${value?.trim() ? "wiz-textarea--filled" : ""} ${className || ""}`}
     style={{
       width: "100%",
       background: "#0f172a",
@@ -523,11 +578,12 @@ const TextArea = ({ value, onChange, placeholder, rows = 3 }: TextAreaProps) => 
   />
 );
 
-const Input = ({ value, onChange, placeholder, style = {} }: InputProps) => (
+const Input = ({ value, onChange, placeholder, style = {}, className }: InputProps) => (
   <input
     value={value}
     onChange={(e: ChangeEvent<HTMLInputElement>) => onChange(e.target.value)}
     placeholder={placeholder}
+    className={`wiz-input ${value?.trim() ? "wiz-input--filled" : ""} ${className || ""}`}
     style={{
       background: "#0f172a",
       border: "1px solid #334155",
@@ -585,7 +641,7 @@ const ProgressBar = ({ value, max, color }: ProgressBarProps) => (
 // STEP 1: PROBLEMA
 // ============================================================
 
-function StepProblem({ data, setData }: StepProps) {
+function StepProblem({ data, setData, showValidation }: StepProps) {
   const update = (key: string, val: unknown) => setData((d) => ({ ...d, problem: { ...d.problem, [key]: val } }));
   const p = data.problem || {};
   const fc = data.fieldConsult || {};
@@ -600,46 +656,48 @@ function StepProblem({ data, setData }: StepProps) {
     <div>
       <Card>
         <SectionTitle icon={<FileText size={18} />} title="Problemos aprašymas" subtitle="Apibrėžkite problemą, kurią DI sistema turėtų spręsti" />
-        <TextArea value={p.description || ""} onChange={(v: string) => update("description", v)} placeholder="Pvz.: Organizacija kasdien gauna 50-100 dokumentų per DVS. Kanceliarijos darbuotojai rankiniu būdu skirsto dokumentus pagal skyrius, priskirdami atsakingus asmenis. Procesas užima ~2h/diena, klaidos dažnis ~15%, terminų praleidimas ~8%." rows={4} />
-        <FieldHint fieldKey="problem.description" isEmpty={!p.description?.trim()} />
+        <div data-field="problem.description">
+          <TextArea value={p.description || ""} onChange={(v: string) => update("description", v)} placeholder="Pvz.: Organizacija kasdien gauna 50-100 dokumentų per DVS. Kanceliarijos darbuotojai rankiniu būdu skirsto dokumentus pagal skyrius, priskirdami atsakingus asmenis. Procesas užima ~2h/diena, klaidos dažnis ~15%, terminų praleidimas ~8%." rows={4} />
+          <FieldHint showValidation={showValidation} fieldKey="problem.description" isEmpty={!p.description?.trim()} />
+        </div>
       </Card>
 
       <Card>
         <SectionTitle icon={<Target size={18} />} title="Dabartinė situacija (AS-IS)" subtitle="Kaip problema sprendžiama dabar?" />
         <div className="wiz-grid-2" style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 12 }}>
-          <div>
+          <div data-field="problem.currentProcess">
             <label style={{ fontSize: 12, color: "#64748b", display: "block", marginBottom: 4 }}>Dabartinis procesas</label>
             <TextArea value={p.currentProcess || ""} onChange={(v: string) => update("currentProcess", v)} placeholder="Rankinis dokumentų skirstymas..." rows={3} />
-            <FieldHint fieldKey="problem.currentProcess" isEmpty={!p.currentProcess?.trim()} />
+            <FieldHint showValidation={showValidation} fieldKey="problem.currentProcess" isEmpty={!p.currentProcess?.trim()} />
           </div>
-          <div>
+          <div data-field="problem.painPoints">
             <label style={{ fontSize: 12, color: "#64748b", display: "block", marginBottom: 4 }}>Pagrindinės problemos</label>
             <TextArea value={p.painPoints || ""} onChange={(v: string) => update("painPoints", v)} placeholder={"1. Lėtas procesas\n2. Žmogiškosios klaidos\n3. Terminų praleidimas"} rows={3} />
-            <FieldHint fieldKey="problem.painPoints" isEmpty={!p.painPoints?.trim()} />
+            <FieldHint showValidation={showValidation} fieldKey="problem.painPoints" isEmpty={!p.painPoints?.trim()} />
           </div>
         </div>
         <div className="wiz-grid-3" style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr", gap: 12, marginTop: 12 }}>
-          <div>
+          <div data-field="problem.timeSpent">
             <label style={{ fontSize: 12, color: "#64748b", display: "block", marginBottom: 4 }}>Laikas (val./dieną)</label>
             <Input value={p.timeSpent || ""} onChange={(v: string) => update("timeSpent", v)} placeholder="2" style={{ width: "100%" }} />
-            <FieldHint fieldKey="problem.timeSpent" isEmpty={!p.timeSpent?.trim()} />
+            <FieldHint showValidation={showValidation} fieldKey="problem.timeSpent" isEmpty={!p.timeSpent?.trim()} />
           </div>
-          <div>
+          <div data-field="problem.errorRate">
             <label style={{ fontSize: 12, color: "#64748b", display: "block", marginBottom: 4 }}>Klaidų dažnis (%)</label>
             <Input value={p.errorRate || ""} onChange={(v: string) => update("errorRate", v)} placeholder="15" style={{ width: "100%" }} />
-            <FieldHint fieldKey="problem.errorRate" isEmpty={!p.errorRate?.trim()} />
+            <FieldHint showValidation={showValidation} fieldKey="problem.errorRate" isEmpty={!p.errorRate?.trim()} />
           </div>
-          <div>
+          <div data-field="problem.volume">
             <label style={{ fontSize: 12, color: "#64748b", display: "block", marginBottom: 4 }}>Apimtis (vnt./dieną)</label>
             <Input value={p.volume || ""} onChange={(v: string) => update("volume", v)} placeholder="75" style={{ width: "100%" }} />
-            <FieldHint fieldKey="problem.volume" isEmpty={!p.volume?.trim()} />
+            <FieldHint showValidation={showValidation} fieldKey="problem.volume" isEmpty={!p.volume?.trim()} />
           </div>
         </div>
       </Card>
 
       <Card>
         <SectionTitle icon={<Scale size={18} />} title="Rizikos klasifikacija pagal ES DI Akta" subtitle="Nustatykite sistemos rizikos lygį" />
-        <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
+        <div data-field="problem.riskLevel" style={{ display: "flex", flexDirection: "column", gap: 8 }}>
           {RISK_LEVELS.map((r) => (
             <button
               key={r.id}
@@ -666,7 +724,7 @@ function StepProblem({ data, setData }: StepProps) {
           ))}
         </div>
 
-        <FieldHint fieldKey="problem.riskLevel" isEmpty={p.riskLevel === undefined} isConsulted={fc["problem.riskLevel"]} onConsult={markConsult} onCancelConsult={cancelConsult} />
+        <FieldHint showValidation={showValidation} fieldKey="problem.riskLevel" isEmpty={p.riskLevel === undefined} isConsulted={fc["problem.riskLevel"]} onConsult={markConsult} onCancelConsult={cancelConsult} />
         {p.riskLevel === 2 && (
           <div style={{ marginTop: 16, padding: 16, background: "#ea580c10", borderRadius: 8, border: "1px solid #ea580c33" }}>
             <div style={{ fontSize: 13, fontWeight: 600, color: "#fdba74", marginBottom: 8 }}>Annex III kategorija (jei taikoma):</div>
@@ -695,8 +753,10 @@ function StepProblem({ data, setData }: StepProps) {
 
       <Card>
         <SectionTitle icon={<Lightbulb size={18} />} title="Kodėl DI?" subtitle="Pagrįskite, kodėl DI yra tinkamas sprendimas" />
-        <TextArea value={p.whyAI || ""} onChange={(v: string) => update("whyAI", v)} placeholder="Pvz.: Dokumentų klasifikavimas pagal turinį reikalauja natūralios kalbos supratimo, kurio neįmanoma realizuoti taisyklėmis. DI gali pasiekti >90% tikslumą su žmogiškąja priežiūra (human-in-the-loop)." rows={3} />
-        <FieldHint fieldKey="problem.whyAI" isEmpty={!p.whyAI?.trim()} />
+        <div data-field="problem.whyAI">
+          <TextArea value={p.whyAI || ""} onChange={(v: string) => update("whyAI", v)} placeholder="Pvz.: Dokumentų klasifikavimas pagal turinį reikalauja natūralios kalbos supratimo, kurio neįmanoma realizuoti taisyklėmis. DI gali pasiekti >90% tikslumą su žmogiškąja priežiūra (human-in-the-loop)." rows={3} />
+          <FieldHint showValidation={showValidation} fieldKey="problem.whyAI" isEmpty={!p.whyAI?.trim()} />
+        </div>
         <div style={{ marginTop: 12 }}>
           <label style={{ fontSize: 12, color: "#64748b", display: "block", marginBottom: 6 }}>Ar svarstėte alternatyvas be DI?</label>
           <div className="wiz-alternatives" style={{ display: "flex", gap: 8 }}>
@@ -729,7 +789,7 @@ function StepProblem({ data, setData }: StepProps) {
 
       <Card>
         <SectionTitle icon={<Users size={18} />} title="Suinteresuotosios šalys" subtitle={<span style={{ display: "inline-flex", alignItems: "center", gap: 4 }}>Kas turi dalyvauti sprendimų priėmime? (<Scale size={12} /> = ne tik technikai!)</span> as unknown as string} />
-        <div className="wiz-grid-2" style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 8, marginTop: 8 }}>
+        <div data-field="problem.stakeholders" className="wiz-grid-2" style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 8, marginTop: 8 }}>
           {STAKEHOLDER_ROLES.map((s) => {
             const isSelected = (p.stakeholders || []).includes(s.id);
             const IconComp = s.icon;
@@ -759,13 +819,15 @@ function StepProblem({ data, setData }: StepProps) {
             );
           })}
         </div>
-        <FieldHint fieldKey="problem.stakeholders" isEmpty={!(p.stakeholders?.length)} isConsulted={fc["problem.stakeholders"]} onConsult={markConsult} onCancelConsult={cancelConsult} />
+        <FieldHint showValidation={showValidation} fieldKey="problem.stakeholders" isEmpty={!(p.stakeholders?.length)} isConsulted={fc["problem.stakeholders"]} onConsult={markConsult} onCancelConsult={cancelConsult} />
       </Card>
 
       <Card>
         <SectionTitle icon={<CheckCircle size={18} />} title="Sėkmės kriterijai (TO-BE)" subtitle="Kaip atrodys sėkmė?" />
-        <TextArea value={p.successCriteria || ""} onChange={(v: string) => update("successCriteria", v)} placeholder={"1. Dokumentų klasifikavimo tikslumas >=90%\n2. Apdorojimo laikas <30 sek./dokumentas\n3. Terminų praleidimas sumažėja iki <2%\n4. Darbuotojų laikas sutaupomas >=1.5 val./diena"} rows={4} />
-        <FieldHint fieldKey="problem.successCriteria" isEmpty={!p.successCriteria?.trim()} isConsulted={fc["problem.successCriteria"]} onConsult={markConsult} onCancelConsult={cancelConsult} />
+        <div data-field="problem.successCriteria">
+          <TextArea value={p.successCriteria || ""} onChange={(v: string) => update("successCriteria", v)} placeholder={"1. Dokumentų klasifikavimo tikslumas >=90%\n2. Apdorojimo laikas <30 sek./dokumentas\n3. Terminų praleidimas sumažėja iki <2%\n4. Darbuotojų laikas sutaupomas >=1.5 val./diena"} rows={4} />
+          <FieldHint showValidation={showValidation} fieldKey="problem.successCriteria" isEmpty={!p.successCriteria?.trim()} isConsulted={fc["problem.successCriteria"]} onConsult={markConsult} onCancelConsult={cancelConsult} />
+        </div>
       </Card>
     </div>
   );
@@ -775,7 +837,7 @@ function StepProblem({ data, setData }: StepProps) {
 // STEP 2: SISTEMOS KONCEPTAS
 // ============================================================
 
-function StepConcept({ data, setData }: StepProps) {
+function StepConcept({ data, setData, showValidation }: StepProps) {
   const update = (key: string, val: unknown) => setData((d) => ({ ...d, concept: { ...d.concept, [key]: val } }));
   const c = data.concept || {};
   const fc = data.fieldConsult || {};
@@ -786,8 +848,10 @@ function StepConcept({ data, setData }: StepProps) {
     <div>
       <Card>
         <SectionTitle icon={<Building2 size={18} />} title="Sistemos vizija" subtitle="Aukšto lygio sistemos aprašymas" />
-        <TextArea value={c.vision || ""} onChange={(v: string) => update("vision", v)} placeholder="Pvz.: Multi-agentu DI sistema, kuri automatiškai klasifikuoja gaunamus dokumentus organizacijos DVS sistemoje, priskiria atsakingus skyrius ir specialistus, stebi terminus ir aptinka anomalijas dokumentų srautuose." rows={3} />
-        <FieldHint fieldKey="concept.vision" isEmpty={!c.vision?.trim()} isConsulted={fc["concept.vision"]} onConsult={markConsult} onCancelConsult={cancelConsult} />
+        <div data-field="concept.vision">
+          <TextArea value={c.vision || ""} onChange={(v: string) => update("vision", v)} placeholder="Pvz.: Multi-agentu DI sistema, kuri automatiškai klasifikuoja gaunamus dokumentus organizacijos DVS sistemoje, priskiria atsakingus skyrius ir specialistus, stebi terminus ir aptinka anomalijas dokumentų srautuose." rows={3} />
+          <FieldHint showValidation={showValidation} fieldKey="concept.vision" isEmpty={!c.vision?.trim()} isConsulted={fc["concept.vision"]} onConsult={markConsult} onCancelConsult={cancelConsult} />
+        </div>
       </Card>
 
       <Card>
@@ -799,10 +863,10 @@ function StepConcept({ data, setData }: StepProps) {
             { key: "dataSources", label: "Duomenų šaltiniai", placeholder: "Pvz.: Istoriniai dokumentai, Org. struktūra" },
             { key: "orchestration", label: "Orkestracija", placeholder: "Pvz.: n8n, Apache Airflow, Custom" },
           ].map((f) => (
-              <div key={f.key}>
+              <div key={f.key} data-field={`concept.${f.key}`}>
                 <label style={{ fontSize: 12, color: "#64748b", display: "block", marginBottom: 4 }}>{f.label}</label>
                 <TextArea value={(c[f.key] as string) || ""} onChange={(v: string) => update(f.key, v)} placeholder={f.placeholder} rows={2} />
-                <FieldHint fieldKey={`concept.${f.key}`} isEmpty={!((c[f.key] as string) || "").trim()} isConsulted={fc[`concept.${f.key}`]} onConsult={markConsult} onCancelConsult={cancelConsult} />
+                <FieldHint showValidation={showValidation} fieldKey={`concept.${f.key}`} isEmpty={!((c[f.key] as string) || "").trim()} isConsulted={fc[`concept.${f.key}`]} onConsult={markConsult} onCancelConsult={cancelConsult} />
               </div>
           ))}
         </div>
@@ -810,7 +874,7 @@ function StepConcept({ data, setData }: StepProps) {
 
       <Card>
         <SectionTitle icon={<Bot size={18} />} title="DI modelio strategija" subtitle="Koks DI modelis bus naudojamas?" />
-        <div style={{ display: "flex", flexWrap: "wrap", gap: 8, marginBottom: 14 }}>
+        <div data-field="concept.modelStrategy" style={{ display: "flex", flexWrap: "wrap", gap: 8, marginBottom: 14 }}>
           {[
             { id: "cloud_llm", label: "Cloud LLM (Claude, GPT)", icon: Cloud },
             { id: "local_llm", label: "Lokalus LLM (Ollama)", icon: Home },
@@ -836,14 +900,16 @@ function StepConcept({ data, setData }: StepProps) {
             );
           })}
         </div>
-        <FieldHint fieldKey="concept.modelStrategy" isEmpty={!(c.modelStrategy?.length)} isConsulted={fc["concept.modelStrategy"]} onConsult={markConsult} onCancelConsult={cancelConsult} />
+        <FieldHint showValidation={showValidation} fieldKey="concept.modelStrategy" isEmpty={!(c.modelStrategy?.length)} isConsulted={fc["concept.modelStrategy"]} onConsult={markConsult} onCancelConsult={cancelConsult} />
+        <div data-field="concept.modelRationale">
         <TextArea value={c.modelRationale || ""} onChange={(v: string) => update("modelRationale", v)} placeholder="Pagrindimas: Kodėl pasirinkta ši modelio strategija? Duomenų saugumo, kainos, veikimo aspektai..." rows={2} />
-        <FieldHint fieldKey="concept.modelRationale" isEmpty={!c.modelRationale?.trim()} isConsulted={fc["concept.modelRationale"]} onConsult={markConsult} onCancelConsult={cancelConsult} />
+        <FieldHint showValidation={showValidation} fieldKey="concept.modelRationale" isEmpty={!c.modelRationale?.trim()} isConsulted={fc["concept.modelRationale"]} onConsult={markConsult} onCancelConsult={cancelConsult} />
+        </div>
       </Card>
 
       <Card>
         <SectionTitle icon={<Eye size={18} />} title="Žmogiškoji priežiūra (Human Oversight)" subtitle="Art. 14 — kaip žmogus kontroliuos DI sprendimus?" />
-        <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
+        <div data-field="concept.oversightLevel" style={{ display: "flex", flexDirection: "column", gap: 8 }}>
           {[
             { id: "hitl", label: "Human-in-the-Loop", desc: "Žmogus patvirtina kiekvieną DI sprendimą prieš veiksmą", level: "Aukščiausias" },
             { id: "hotl", label: "Human-on-the-Loop", desc: "DI veikia autonomiškai, žmogus stebi ir gali sustabdyti", level: "Vidutinis" },
@@ -870,26 +936,26 @@ function StepConcept({ data, setData }: StepProps) {
             );
           })}
         </div>
-        <FieldHint fieldKey="concept.oversightLevel" isEmpty={!c.oversightLevel} isConsulted={fc["concept.oversightLevel"]} onConsult={markConsult} onCancelConsult={cancelConsult} />
-        <div style={{ marginTop: 12 }}>
+        <FieldHint showValidation={showValidation} fieldKey="concept.oversightLevel" isEmpty={!c.oversightLevel} isConsulted={fc["concept.oversightLevel"]} onConsult={markConsult} onCancelConsult={cancelConsult} />
+        <div data-field="concept.overrideMechanism" style={{ marginTop: 12 }}>
           <label style={{ fontSize: 12, color: "#64748b", display: "block", marginBottom: 4 }}>Override mechanizmas</label>
           <TextArea value={c.overrideMechanism || ""} onChange={(v: string) => update("overrideMechanism", v)} placeholder="Aprašykite, kaip naudotojas gales pakeisti DI sprendimą..." rows={2} />
-          <FieldHint fieldKey="concept.overrideMechanism" isEmpty={!c.overrideMechanism?.trim()} isConsulted={fc["concept.overrideMechanism"]} onConsult={markConsult} onCancelConsult={cancelConsult} />
+          <FieldHint showValidation={showValidation} fieldKey="concept.overrideMechanism" isEmpty={!c.overrideMechanism?.trim()} isConsulted={fc["concept.overrideMechanism"]} onConsult={markConsult} onCancelConsult={cancelConsult} />
         </div>
       </Card>
 
       <Card>
         <SectionTitle icon={<Lock size={18} />} title="Duomenų apsauga ir BDAR" subtitle="Asmens duomenų tvarkymas DI sistemoje" />
         <div className="wiz-grid-2" style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 12 }}>
-          <div>
+          <div data-field="concept.personalData">
             <label style={{ fontSize: 12, color: "#64748b", display: "block", marginBottom: 4 }}>Tvarkomi asmens duomenys</label>
             <TextArea value={c.personalData || ""} onChange={(v: string) => update("personalData", v)} placeholder="Vardai, pareigos, el. pasto adresai dokumentuose..." rows={2} />
-            <FieldHint fieldKey="concept.personalData" isEmpty={!c.personalData?.trim()} isConsulted={fc["concept.personalData"]} onConsult={markConsult} onCancelConsult={cancelConsult} />
+            <FieldHint showValidation={showValidation} fieldKey="concept.personalData" isEmpty={!c.personalData?.trim()} isConsulted={fc["concept.personalData"]} onConsult={markConsult} onCancelConsult={cancelConsult} />
           </div>
-          <div>
+          <div data-field="concept.dataMinimization">
             <label style={{ fontSize: 12, color: "#64748b", display: "block", marginBottom: 4 }}>Duomenų minimizavimas</label>
             <TextArea value={c.dataMinimization || ""} onChange={(v: string) => update("dataMinimization", v)} placeholder="Kaip uztikriname, kad naudojami tik butini duomenys..." rows={2} />
-            <FieldHint fieldKey="concept.dataMinimization" isEmpty={!c.dataMinimization?.trim()} isConsulted={fc["concept.dataMinimization"]} onConsult={markConsult} onCancelConsult={cancelConsult} />
+            <FieldHint showValidation={showValidation} fieldKey="concept.dataMinimization" isEmpty={!c.dataMinimization?.trim()} isConsulted={fc["concept.dataMinimization"]} onConsult={markConsult} onCancelConsult={cancelConsult} />
           </div>
         </div>
         <div style={{ display: "flex", gap: 8, marginTop: 12, flexWrap: "wrap" }}>
@@ -917,7 +983,7 @@ function StepConcept({ data, setData }: StepProps) {
             );
           })}
         </div>
-        <FieldHint fieldKey="concept.gdprChecks" isEmpty={!(c.gdprChecks?.length)} isConsulted={fc["concept.gdprChecks"]} onConsult={markConsult} onCancelConsult={cancelConsult} />
+        <FieldHint showValidation={showValidation} fieldKey="concept.gdprChecks" isEmpty={!(c.gdprChecks?.length)} isConsulted={fc["concept.gdprChecks"]} onConsult={markConsult} onCancelConsult={cancelConsult} />
       </Card>
 
       <Card>
@@ -928,10 +994,10 @@ function StepConcept({ data, setData }: StepProps) {
             { key: "phase2", label: "2 fazė: Pilotas", placeholder: "Ribota aplinka, testavimas..." },
             { key: "phase3", label: "3 fazė: Produkcija", placeholder: "Pilnas diegimas..." },
           ].map((f) => (
-            <div key={f.key}>
+            <div key={f.key} data-field={`concept.${f.key}`}>
               <label style={{ fontSize: 12, color: "#64748b", display: "block", marginBottom: 4 }}>{f.label}</label>
               <TextArea value={(c[f.key] as string) || ""} onChange={(v: string) => update(f.key, v)} placeholder={f.placeholder} rows={3} />
-              <FieldHint fieldKey={`concept.${f.key}`} isEmpty={!((c[f.key] as string) || "").trim()} isConsulted={fc[`concept.${f.key}`]} onConsult={markConsult} onCancelConsult={cancelConsult} />
+              <FieldHint showValidation={showValidation} fieldKey={`concept.${f.key}`} isEmpty={!((c[f.key] as string) || "").trim()} isConsulted={fc[`concept.${f.key}`]} onConsult={markConsult} onCancelConsult={cancelConsult} />
             </div>
           ))}
         </div>
@@ -944,7 +1010,7 @@ function StepConcept({ data, setData }: StepProps) {
 // STEP 3: EVALS / METRIKOS
 // ============================================================
 
-function StepEvals({ data, setData }: StepProps) {
+function StepEvals({ data, setData, showValidation }: StepProps) {
   const update = (key: string, val: unknown) => setData((d) => ({ ...d, evals: { ...d.evals, [key]: val } }));
   const e = data.evals || {};
   const [expandedMetric, setExpandedMetric] = useState<string | null>(null);
@@ -1042,9 +1108,9 @@ function StepEvals({ data, setData }: StepProps) {
                 const val = scores[metric.id];
                 const isExpanded = expandedMetric === metric.id;
                 return (
-                  <div key={metric.id} style={{
+                  <div key={metric.id} className={showValidation && val === undefined && !needsConsult[metric.id] ? "wiz-field-invalid" : ""} style={{
                     background: needsConsult[metric.id] ? "#1e40af08" : "#0f172a",
-                    border: `1px solid ${metric.critical && val !== undefined && val <= 1 ? "#dc2626" : needsConsult[metric.id] ? "#93c5fd40" : "#334155"}`,
+                    border: `1px solid ${showValidation && val === undefined && !needsConsult[metric.id] ? "#dc2626" : metric.critical && val !== undefined && val <= 1 ? "#dc2626" : needsConsult[metric.id] ? "#93c5fd40" : "#334155"}`,
                     borderRadius: 10, padding: "16px 18px", transition: "border-color 0.3s",
                   }}>
                     {/* Metric header */}
@@ -1158,7 +1224,7 @@ function StepEvals({ data, setData }: StepProps) {
           })}
         </div>
         <TextArea value={e.testingNotes || ""} onChange={(v: string) => update("testingNotes", v)} placeholder="Papildomi testavimo reikalavimai ar pastabos..." rows={2} />
-        <FieldHint fieldKey="evals.testingMethods" isEmpty={!(e.testingMethods?.length)} isConsulted={(data.fieldConsult || {})["evals.testingMethods"]} onConsult={(key: string) => setData((d) => ({ ...d, fieldConsult: { ...(d.fieldConsult || {}), [key]: true } }))} onCancelConsult={(key: string) => setData((d) => { const c = { ...(d.fieldConsult || {}) }; delete c[key]; return { ...d, fieldConsult: c }; })} />
+        <FieldHint showValidation={showValidation} fieldKey="evals.testingMethods" isEmpty={!(e.testingMethods?.length)} isConsulted={(data.fieldConsult || {})["evals.testingMethods"]} onConsult={(key: string) => setData((d) => ({ ...d, fieldConsult: { ...(d.fieldConsult || {}), [key]: true } }))} onCancelConsult={(key: string) => setData((d) => { const c = { ...(d.fieldConsult || {}) }; delete c[key]; return { ...d, fieldConsult: c }; })} />
       </Card>
     </div>
   );
@@ -1168,7 +1234,7 @@ function StepEvals({ data, setData }: StepProps) {
 // STEP 4: SISTEMOS PROTOTIPAS (ARCHITEKTURA)
 // ============================================================
 
-function StepArchitecture({ data, setData }: StepProps) {
+function StepArchitecture({ data, setData, showValidation }: StepProps) {
   const update = (key: string, val: unknown) => setData((d) => ({ ...d, architecture: { ...d.architecture, [key]: val } }));
   const a = data.architecture || {};
   const fc = data.fieldConsult || {};
@@ -1191,7 +1257,7 @@ function StepArchitecture({ data, setData }: StepProps) {
     <div>
       <Card>
         <SectionTitle icon={<Puzzle size={18} />} title="Architektūros komponentai" subtitle="Pasirinkite ir sukonfigūruokite sistemos komponentus" />
-        <div className="wiz-grid-2" style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 10 }}>
+        <div data-field="architecture.selectedComponents" className="wiz-grid-2" style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 10 }}>
           {ARCH_COMPONENTS.map((comp) => {
             const isSelected = (a.selectedComponents || []).includes(comp.id);
             const isOpen = selectedComp === comp.id;
@@ -1252,18 +1318,20 @@ function StepArchitecture({ data, setData }: StepProps) {
             );
           })}
         </div>
-        <FieldHint fieldKey="architecture.selectedComponents" isEmpty={!(a.selectedComponents?.length)} isConsulted={fc["architecture.selectedComponents"]} onConsult={markConsult} onCancelConsult={cancelConsult} />
+        <FieldHint showValidation={showValidation} fieldKey="architecture.selectedComponents" isEmpty={!(a.selectedComponents?.length)} isConsulted={fc["architecture.selectedComponents"]} onConsult={markConsult} onCancelConsult={cancelConsult} />
       </Card>
 
       <Card>
         <SectionTitle icon={<GitBranch size={18} />} title="Duomenų srautas (Data Flow)" subtitle="Aprašykite, kaip duomenys keliauja per sistemą" />
+        <div data-field="architecture.dataFlow">
         <TextArea value={a.dataFlow || ""} onChange={(v: string) => update("dataFlow", v)} placeholder={"1. Dokumentas ateina per DVS SOAP API (Webhook)\n2. OCR ištraukia tekstą iš PDF/skanuoto dokumento\n3. LLM klasifikuoja: tipas, skyrius, prioritetas, atsakingas\n4. Verslo taisyklės patikrina ir maršrutuoja\n5. Žmogus patvirtina (jei confidence < 85%)\n6. Rezultatas grąžinamas į DVS per SOAP\n7. Metrikos registruojamos duomenų bazėje"} rows={7} />
-        <FieldHint fieldKey="architecture.dataFlow" isEmpty={!a.dataFlow?.trim()} isConsulted={fc["architecture.dataFlow"]} onConsult={markConsult} onCancelConsult={cancelConsult} />
+        <FieldHint showValidation={showValidation} fieldKey="architecture.dataFlow" isEmpty={!a.dataFlow?.trim()} isConsulted={fc["architecture.dataFlow"]} onConsult={markConsult} onCancelConsult={cancelConsult} />
+        </div>
       </Card>
 
       <Card>
         <SectionTitle icon={<Building2 size={18} />} title="Infrastruktūros planas" subtitle="Kur ir kaip bus diegiama sistema?" />
-        <div style={{ display: "flex", flexWrap: "wrap", gap: 8, marginBottom: 14 }}>
+        <div data-field="architecture.infrastructure" style={{ display: "flex", flexWrap: "wrap", gap: 8, marginBottom: 14 }}>
           {[
             { id: "on_premise", label: "On-Premise", icon: Building },
             { id: "private_cloud", label: "Privati debesija", icon: Cloud },
@@ -1285,25 +1353,27 @@ function StepArchitecture({ data, setData }: StepProps) {
             );
           })}
         </div>
-        <FieldHint fieldKey="architecture.infrastructure" isEmpty={!a.infrastructure} isConsulted={fc["architecture.infrastructure"]} onConsult={markConsult} onCancelConsult={cancelConsult} />
+        <FieldHint showValidation={showValidation} fieldKey="architecture.infrastructure" isEmpty={!a.infrastructure} isConsulted={fc["architecture.infrastructure"]} onConsult={markConsult} onCancelConsult={cancelConsult} />
         <div className="wiz-grid-2" style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 12, marginTop: 12 }}>
-          <div>
+          <div data-field="architecture.securityReqs">
             <label style={{ fontSize: 12, color: "#64748b", display: "block", marginBottom: 4 }}>Saugumo reikalavimai</label>
             <TextArea value={a.securityReqs || ""} onChange={(v: string) => update("securityReqs", v)} placeholder="Tinklo izoliacija, šifravimas, prieigos kontrolė..." rows={3} />
-            <FieldHint fieldKey="architecture.securityReqs" isEmpty={!a.securityReqs?.trim()} isConsulted={fc["architecture.securityReqs"]} onConsult={markConsult} onCancelConsult={cancelConsult} />
+            <FieldHint showValidation={showValidation} fieldKey="architecture.securityReqs" isEmpty={!a.securityReqs?.trim()} isConsulted={fc["architecture.securityReqs"]} onConsult={markConsult} onCancelConsult={cancelConsult} />
           </div>
-          <div>
+          <div data-field="architecture.scaleReqs">
             <label style={{ fontSize: 12, color: "#64748b", display: "block", marginBottom: 4 }}>Mastelio reikalavimai</label>
             <TextArea value={a.scaleReqs || ""} onChange={(v: string) => update("scaleReqs", v)} placeholder="Apkrovos lūkesčiai, augimo planas..." rows={3} />
-            <FieldHint fieldKey="architecture.scaleReqs" isEmpty={!a.scaleReqs?.trim()} isConsulted={fc["architecture.scaleReqs"]} onConsult={markConsult} onCancelConsult={cancelConsult} />
+            <FieldHint showValidation={showValidation} fieldKey="architecture.scaleReqs" isEmpty={!a.scaleReqs?.trim()} isConsulted={fc["architecture.scaleReqs"]} onConsult={markConsult} onCancelConsult={cancelConsult} />
           </div>
         </div>
       </Card>
 
       <Card>
         <SectionTitle icon={<AlertTriangle size={18} />} title="Rizikos ir mitigacijos" subtitle="Techninės ir organizacinės rizikos" />
-        <TextArea value={a.risks || ""} onChange={(v: string) => update("risks", v)} placeholder={"Rizika | Tikimybė | Poveikis | Mitigacija\n------|----------|---------|----------\nDVS API nestabilumas | Vidutinė | Aukštas | Retry logika + cache\nModelio hallucinations | Aukšta | Vidutinis | Human-in-the-loop + confidence threshold\nDuomenų nutekėjimas | Žema | Kritinis | On-premise diegimas, VPN, audit logai"} rows={6} />
-        <FieldHint fieldKey="architecture.risks" isEmpty={!a.risks?.trim()} isConsulted={fc["architecture.risks"]} onConsult={markConsult} onCancelConsult={cancelConsult} />
+        <div data-field="architecture.risks">
+          <TextArea value={a.risks || ""} onChange={(v: string) => update("risks", v)} placeholder={"Rizika | Tikimybė | Poveikis | Mitigacija\n------|----------|---------|----------\nDVS API nestabilumas | Vidutinė | Aukštas | Retry logika + cache\nModelio hallucinations | Aukšta | Vidutinis | Human-in-the-loop + confidence threshold\nDuomenų nutekėjimas | Žema | Kritinis | On-premise diegimas, VPN, audit logai"} rows={6} />
+          <FieldHint showValidation={showValidation} fieldKey="architecture.risks" isEmpty={!a.risks?.trim()} isConsulted={fc["architecture.risks"]} onConsult={markConsult} onCancelConsult={cancelConsult} />
+        </div>
       </Card>
     </div>
   );
@@ -1364,11 +1434,12 @@ const DEFAULT_RISKS: RiskEntry[] = [
   { id: "R-16", article: "BDAR", area: "Duomenų apsauga", responsible: "Duomenų valdytojas", risk: "Nepakankamas duomenų saugojimo laikotarpio apibrėžimas", reason: "Asmens duomenys negali būti saugomi ilgiau nei būtina; pažeidimas = BDAR sankcijos", impact: "medium", likelihood: "medium", measures: "Duomenų gyvavimo ciklo politika, automatinio ištrynimo procedūros", status: "open" },
 ];
 
-function StepRisks({ data, setData }: StepProps) {
+function StepRisks({ data, setData, showValidation }: StepProps) {
   const assessments = data.risks?.assessments || {};
   const [selectedRisk, setSelectedRisk] = useState<string | null>(null);
   const [filterArticle, setFilterArticle] = useState("Visi");
   const [searchText, setSearchText] = useState("");
+  const [bulkAction, setBulkAction] = useState<string>("managed");
 
   const updateAssessment = (riskId: string, field: string, val: unknown) => {
     setData((d) => ({
@@ -1413,7 +1484,7 @@ function StepRisks({ data, setData }: StepProps) {
   return (
     <div>
       <Card>
-        <SectionTitle icon={<ShieldAlert size={18} />} title="ES DI Akto rizikų registras" subtitle="Įvertinkite kiekvieną riziką pagal jūsų sistemos kontekstą. Keiskite statusą, poveikį ir tikimybę." />
+        <SectionTitle icon={<ShieldAlert size={18} />} title="ES DI Akto rizikų registras" subtitle="Keiskite poveikį, tikimybę ir statusą tiesiogiai lentelėje. Paspauskite eilutę detalėms ir pastaboms." />
 
         {/* Stats */}
         <div className="wiz-grid-4" style={{ display: "grid", gridTemplateColumns: "repeat(4, 1fr)", gap: 10, marginBottom: 16 }}>
@@ -1448,6 +1519,29 @@ function StepRisks({ data, setData }: StepProps) {
           ))}
         </div>
 
+        {/* Bulk action */}
+        {stats.open > 0 && (
+          <div style={{ display: "flex", gap: 8, alignItems: "center", marginBottom: 12, padding: "8px 12px", borderRadius: 8, background: "#1e293b", border: "1px solid #334155" }}>
+            <span style={{ fontSize: 11, color: "#64748b", whiteSpace: "nowrap" }}>Greitasis veiksmas:</span>
+            <select value={bulkAction} onChange={(e) => setBulkAction(e.target.value)}
+              style={{ background: "#0f172a", border: "1px solid #334155", borderRadius: 6, padding: "4px 10px", color: "#e2e8f0", fontSize: 12, cursor: "pointer" }}>
+              <option value="managed">Visos atviros &rarr; Valdoma</option>
+              <option value="accepted">Visos atviros &rarr; Priimta</option>
+              <option value="not_applicable">Visos atviros &rarr; Netaikoma</option>
+            </select>
+            <button onClick={() => {
+              DEFAULT_RISKS.forEach((r) => {
+                const current = assessments[r.id];
+                if (!current || current.status === "open" || (!current.status && r.status === "open")) {
+                  updateAssessment(r.id, "status", bulkAction);
+                }
+              });
+            }} style={{ padding: "4px 14px", borderRadius: 6, background: "#1e40af", color: "#fff", fontSize: 12, fontWeight: 600, border: "none", cursor: "pointer", whiteSpace: "nowrap" }}>
+              Taikyti ({stats.open})
+            </button>
+          </div>
+        )}
+
         {/* Risk table */}
         <div style={{ overflowX: "auto" }}>
           <table style={{ width: "100%", borderCollapse: "collapse", fontSize: 12 }}>
@@ -1465,9 +1559,11 @@ function StepRisks({ data, setData }: StepProps) {
                 const likelihoodStyle = RISK_LIKELIHOOD_LABELS[rd.likelihood];
                 const statusStyle = RISK_STATUS_LABELS[rd.status];
                 const artColor = ARTICLE_COLORS[r.article] || "#64748b";
+                const isUnreviewed = assessments[r.id] === undefined;
                 return (
                   <tr key={r.id} onClick={() => setSelectedRisk(r.id)}
-                    style={{ borderBottom: "1px solid #1e293b", background: i % 2 === 0 ? "transparent" : "#0f172a08", cursor: "pointer", transition: "background 0.15s" }}
+                    className={showValidation && isUnreviewed ? "wiz-field-invalid" : ""}
+                    style={{ borderBottom: "1px solid #1e293b", background: i % 2 === 0 ? "transparent" : "#0f172a08", cursor: "pointer", transition: "background 0.15s", borderLeft: showValidation && isUnreviewed ? "3px solid #dc2626" : "none" }}
                     onMouseEnter={(e) => { e.currentTarget.style.background = "#334155"; }}
                     onMouseLeave={(e) => { e.currentTarget.style.background = i % 2 === 0 ? "transparent" : "#0f172a08"; }}
                   >
@@ -1478,14 +1574,35 @@ function StepRisks({ data, setData }: StepProps) {
                     <td style={{ padding: "10px", color: "#94a3b8", fontSize: 11 }}>{r.area}</td>
                     <td style={{ padding: "10px", color: "#7dd3fc", fontSize: 11 }}>{r.responsible}</td>
                     <td style={{ padding: "10px", color: "#e2e8f0", maxWidth: 260, fontSize: 12 }}>{r.risk}</td>
-                    <td style={{ padding: "10px" }}>
-                      <span style={{ display: "inline-block", padding: "2px 8px", borderRadius: 4, fontSize: 11, fontWeight: 600, background: impactStyle.color + "18", color: impactStyle.color }}>{impactStyle.label}</span>
+                    <td style={{ padding: "6px 4px" }} onClick={(e) => e.stopPropagation()}>
+                      <select value={rd.impact} onChange={(e) => updateAssessment(r.id, "impact", e.target.value)}
+                        style={{ background: "transparent", border: "1px solid transparent", borderRadius: 4, color: impactStyle.color, fontSize: 11, fontWeight: 600, cursor: "pointer", padding: "2px 4px", fontStyle: !assessments[r.id]?.impact ? "italic" : "normal", opacity: !assessments[r.id]?.impact ? 0.7 : 1 }}
+                        onFocus={(e) => { e.currentTarget.style.borderColor = "#334155"; e.currentTarget.style.background = "#0f172a"; }}
+                        onBlur={(e) => { e.currentTarget.style.borderColor = "transparent"; e.currentTarget.style.background = "transparent"; }}>
+                        {(Object.entries(RISK_IMPACT_LABELS) as [RiskImpact, { label: string; color: string }][]).map(([k, v]) => (
+                          <option key={k} value={k}>{v.label}</option>
+                        ))}
+                      </select>
                     </td>
-                    <td style={{ padding: "10px" }}>
-                      <span style={{ display: "inline-block", padding: "2px 8px", borderRadius: 4, fontSize: 11, fontWeight: 600, background: likelihoodStyle.color + "18", color: likelihoodStyle.color }}>{likelihoodStyle.label}</span>
+                    <td style={{ padding: "6px 4px" }} onClick={(e) => e.stopPropagation()}>
+                      <select value={rd.likelihood} onChange={(e) => updateAssessment(r.id, "likelihood", e.target.value)}
+                        style={{ background: "transparent", border: "1px solid transparent", borderRadius: 4, color: likelihoodStyle.color, fontSize: 11, fontWeight: 600, cursor: "pointer", padding: "2px 4px", fontStyle: !assessments[r.id]?.likelihood ? "italic" : "normal", opacity: !assessments[r.id]?.likelihood ? 0.7 : 1 }}
+                        onFocus={(e) => { e.currentTarget.style.borderColor = "#334155"; e.currentTarget.style.background = "#0f172a"; }}
+                        onBlur={(e) => { e.currentTarget.style.borderColor = "transparent"; e.currentTarget.style.background = "transparent"; }}>
+                        {(Object.entries(RISK_LIKELIHOOD_LABELS) as [RiskLikelihood, { label: string; color: string }][]).map(([k, v]) => (
+                          <option key={k} value={k}>{v.label}</option>
+                        ))}
+                      </select>
                     </td>
-                    <td style={{ padding: "10px" }}>
-                      <span style={{ display: "inline-block", padding: "2px 8px", borderRadius: 4, fontSize: 11, fontWeight: 600, background: statusStyle.color + "18", color: statusStyle.color }}>{statusStyle.label}</span>
+                    <td style={{ padding: "6px 4px" }} onClick={(e) => e.stopPropagation()}>
+                      <select value={rd.status} onChange={(e) => updateAssessment(r.id, "status", e.target.value)}
+                        style={{ background: "transparent", border: "1px solid transparent", borderRadius: 4, color: statusStyle.color, fontSize: 11, fontWeight: 600, cursor: "pointer", padding: "2px 4px", fontStyle: !assessments[r.id]?.status ? "italic" : "normal", opacity: !assessments[r.id]?.status ? 0.7 : 1 }}
+                        onFocus={(e) => { e.currentTarget.style.borderColor = "#334155"; e.currentTarget.style.background = "#0f172a"; }}
+                        onBlur={(e) => { e.currentTarget.style.borderColor = "transparent"; e.currentTarget.style.background = "transparent"; }}>
+                        {(Object.entries(RISK_STATUS_LABELS) as [RiskStatus, { label: string; color: string }][]).map(([k, v]) => (
+                          <option key={k} value={k}>{v.label}</option>
+                        ))}
+                      </select>
                     </td>
                     <td style={{ padding: "10px", color: "#475569", fontSize: 16 }}>›</td>
                   </tr>
@@ -1993,6 +2110,17 @@ const STEPS: StepDefinition[] = [
 export default function DIPlanningWizard() {
   const [activeStep, setActiveStep] = useState<number>(0);
   const [data, setData] = useState<WizardData>({ problem: {}, concept: {}, evals: {}, architecture: {}, risks: {}, _meta: {}, fieldConsult: {} });
+  const [showValidation, setShowValidation] = useState(false);
+
+  // Reset validation indicators when step changes
+  useEffect(() => { setShowValidation(false); }, [activeStep]);
+
+  // Count fields marked for consultation
+  const consultCount = useMemo(() => {
+    const fieldCount = Object.values(data.fieldConsult || {}).filter(Boolean).length;
+    const evalsCount = Object.values(data.evals?.needsConsult || {}).filter(Boolean).length;
+    return fieldCount + evalsCount;
+  }, [data.fieldConsult, data.evals?.needsConsult]);
 
   // Get all required field keys for a step from FIELD_EXPERTISE
   const getStepFieldKeys = useCallback((stepId: string): string[] => {
@@ -2135,8 +2263,8 @@ export default function DIPlanningWizard() {
             const StepIcon = step.icon;
             const canNavigate = i <= activeStep || Array.from({ length: i }, (_, idx) => STEPS[idx].id).every((sid) => isStepComplete(sid));
             return (
+              <div key={step.id}>
               <button
-                key={step.id}
                 onClick={() => canNavigate && setActiveStep(i)}
                 style={{
                   width: "100%", display: "flex", flexDirection: "column", gap: 4,
@@ -2163,6 +2291,43 @@ export default function DIPlanningWizard() {
                   </span>
                 </div>
               </button>
+              {/* Field-level checklist for active step */}
+              {isActive && step.id !== "report" && (
+                <div className="wizard-scroll" style={{ padding: "4px 18px 8px 44px", maxHeight: 200, overflowY: "auto" }}>
+                  {step.id === "evals" ? (
+                    EVAL_CATEGORIES.map((cat) => {
+                      const answered = cat.metrics.filter((m) => (data.evals?.scores || {})[m.id] !== undefined || (data.evals?.needsConsult || {})[m.id]).length;
+                      return (
+                        <div key={cat.id} style={{ display: "flex", alignItems: "center", gap: 6, fontSize: 11, padding: "2px 0" }}>
+                          {answered === cat.metrics.length ? <Check size={10} style={{ color: "#059669" }} /> : <div style={{ width: 10, height: 10, borderRadius: 5, border: "1px solid #475569", flexShrink: 0 }} />}
+                          <span style={{ color: answered === cat.metrics.length ? "#059669" : "#64748b", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
+                            {cat.title} ({answered}/{cat.metrics.length})
+                          </span>
+                        </div>
+                      );
+                    })
+                  ) : step.id === "risks" ? (
+                    <div style={{ fontSize: 11, color: "#64748b", padding: "2px 0" }}>
+                      Įvertinta: {Object.keys(data.risks?.assessments || {}).length}/{DEFAULT_RISKS.length} rizikų
+                    </div>
+                  ) : (
+                    getStepFieldKeys(step.id).map((fk) => {
+                      const handled = isFieldHandled(fk);
+                      const label = FIELD_LABELS[fk] || fk.split(".")[1];
+                      return (
+                        <div key={fk}
+                          onClick={(ev) => { ev.stopPropagation(); document.querySelector(`[data-field="${fk}"]`)?.scrollIntoView({ behavior: "smooth", block: "center" }); }}
+                          style={{ display: "flex", alignItems: "center", gap: 6, fontSize: 11, padding: "2px 0", cursor: "pointer" }}
+                        >
+                          {handled ? <Check size={10} style={{ color: "#059669", flexShrink: 0 }} /> : <div style={{ width: 10, height: 10, borderRadius: 5, border: "1px solid #475569", flexShrink: 0 }} />}
+                          <span style={{ color: handled ? "#059669" : "#64748b", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{label}</span>
+                        </div>
+                      );
+                    })
+                  )}
+                </div>
+              )}
+              </div>
             );
           })}
 
@@ -2197,7 +2362,7 @@ export default function DIPlanningWizard() {
             {activeStep === STEPS.length - 1 ? (
               <StepReport data={data} />
             ) : (
-              <StepComponent data={data} setData={setData} />
+              <StepComponent data={data} setData={setData} showValidation={showValidation} />
             )}
 
             {/* Navigation */}
@@ -2244,16 +2409,25 @@ export default function DIPlanningWizard() {
                       <ArrowLeft size={14} /> {activeStep > 0 ? STEPS[activeStep - 1].title : ""}
                     </button>
                     <button
-                      onClick={() => canGoNext && setActiveStep(Math.min(STEPS.length - 1, activeStep + 1))}
-                      disabled={activeStep === STEPS.length - 1 || !canGoNext}
+                      onClick={() => {
+                        if (canGoNext) {
+                          setActiveStep(Math.min(STEPS.length - 1, activeStep + 1));
+                        } else {
+                          setShowValidation(true);
+                          setTimeout(() => {
+                            const el = document.querySelector(".wiz-field-invalid");
+                            el?.scrollIntoView({ behavior: "smooth", block: "center" });
+                          }, 100);
+                        }
+                      }}
+                      disabled={activeStep === STEPS.length - 1}
                       style={{
                         padding: "10px 24px", borderRadius: 8, border: "none",
-                        background: !canGoNext || activeStep === STEPS.length - 1 ? "#334155" : "#1e40af",
-                        color: !canGoNext || activeStep === STEPS.length - 1 ? "#475569" : "#fff",
-                        cursor: !canGoNext || activeStep === STEPS.length - 1 ? "default" : "pointer",
+                        background: activeStep === STEPS.length - 1 ? "#334155" : canGoNext ? "#1e40af" : "#92400e",
+                        color: activeStep === STEPS.length - 1 ? "#475569" : "#fff",
+                        cursor: activeStep === STEPS.length - 1 ? "default" : "pointer",
                         fontSize: 14, fontWeight: 600,
                         display: "flex", alignItems: "center", gap: 6,
-                        opacity: !canGoNext ? 0.5 : 1,
                       }}
                     >
                       {activeStep < STEPS.length - 1 ? <>{STEPS[activeStep + 1].title} <ArrowRight size={14} /></> : <><CheckCircle size={14} /> Dokumentas paruostas</>}
@@ -2265,6 +2439,26 @@ export default function DIPlanningWizard() {
           </div>
         </div>
       </div>
+
+      {/* Floating consultation counter */}
+      {consultCount > 0 && (
+        <button
+          onClick={() => setActiveStep(STEPS.length - 1)}
+          style={{
+            position: "fixed", bottom: 24, right: 24, zIndex: 60,
+            background: "#1e293b", border: "1px solid #059669", borderRadius: 12,
+            padding: "10px 16px", display: "flex", alignItems: "center", gap: 8,
+            boxShadow: "0 4px 16px rgba(0,0,0,0.5)", cursor: "pointer",
+            transition: "all 0.15s",
+          }}
+          onMouseEnter={(ev) => { ev.currentTarget.style.background = "#065f46"; ev.currentTarget.style.borderColor = "#34d399"; }}
+          onMouseLeave={(ev) => { ev.currentTarget.style.background = "#1e293b"; ev.currentTarget.style.borderColor = "#059669"; }}
+        >
+          <MessageSquare size={16} style={{ color: "#059669" }} />
+          <span style={{ fontSize: 13, color: "#e2e8f0", fontWeight: 600 }}>{consultCount}</span>
+          <span style={{ fontSize: 12, color: "#64748b" }}>konsultacijai</span>
+        </button>
+      )}
     </div>
   );
 }

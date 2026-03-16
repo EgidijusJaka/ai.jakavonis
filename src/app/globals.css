@@ -37,6 +37,27 @@ html[data-scroll="smooth"] {
   background: #475569;
 }
 
+/* Wizard field styling */
+.wiz-textarea::placeholder,
+.wiz-input::placeholder {
+  color: #475569 !important;
+  font-style: italic;
+  opacity: 1;
+}
+.wiz-textarea--filled { border-left: 3px solid #059669 !important; }
+.wiz-input--filled { border-left: 3px solid #059669 !important; }
+
+/* Validation */
+@keyframes wiz-shake {
+  0%, 100% { transform: translateX(0); }
+  20%, 60% { transform: translateX(-4px); }
+  40%, 80% { transform: translateX(4px); }
+}
+.wiz-field-invalid { border-color: #dc2626 !important; animation: wiz-shake 0.4s ease-in-out; }
+
+/* Consultation tooltip */
+.wiz-tooltip-wrap:hover .wiz-tooltip { display: block !important; }
+
 /* Responsive wizard utilities */
 @media (max-width: 768px) {
   .wiz-sidebar { display: none !important; }
